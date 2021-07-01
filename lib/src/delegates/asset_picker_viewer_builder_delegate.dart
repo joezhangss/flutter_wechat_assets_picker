@@ -368,9 +368,14 @@ class DefaultAssetPickerViewerBuilderDelegate
         );
         break;
       case AssetType.other:
-        builder = Center(
-          child: Text(Constants.textDelegate.unSupportedAssetType),
-        );
+        if(asset.relativePath != null && asset.relativePath != '')
+        {
+          builder = Image.network(asset.relativePath!);//支持网络图片
+        }else{
+          builder = Center(
+            child: Text(Constants.textDelegate.unSupportedAssetType),
+          );
+        }
         break;
     }
     return builder;
