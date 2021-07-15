@@ -1,271 +1,192 @@
-/**
- *   日期          修改人              修改目的
- * 20210708       zhang qiao
- *
- */
+///
+/// [Author] Alex (https://github.com/Alex525)
+/// [Date] 2020/4/6 18:58
+///
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
-import 'timeline_util.dart';
+import 'package:wechat_assets_picker/src/constants/constants.dart';
 
 class VideoNetworkPageBuilder extends StatefulWidget {
-  // final double height;
-  final String url;//可以传视频或者音频
-  final bool isLoopPlay;//是否循环播放
-  final bool initPlay;//是否初始化完成的时候就播放
+  const VideoNetworkPageBuilder({
+    Key? key,
+    required this.url,
+    // required this.state,
+    this.hasOnlyOneVideoAndMoment = false,
+  }) : super(key: key);
 
-  // ignore: sort_constructors_first
-  const VideoNetworkPageBuilder({ required this.url, this.isLoopPlay = false, this.initPlay = false});
+  /// Asset currently displayed.
+  /// 展示的资源
+  // final AssetEntity asset;
+  final String url;
+
+  // /// [State] for asset picker viewer.
+  // /// 资源查看器的状态 [State]
+  // final AssetPickerViewerState<AssetEntity, AssetPathEntity> state;
+  //
+  /// Only previewing one video and with the [SpecialPickerType.wechatMoment].
+  /// 是否处于 [SpecialPickerType.wechatMoment] 且只有一个视频
+  final bool hasOnlyOneVideoAndMoment;
 
   @override
-  State<StatefulWidget> createState() {
-    return VideoNetworkPageBuilderState();
-  }
+  _VideoNetworkPageBuilderState createState() => _VideoNetworkPageBuilderState();
 }
 
-class VideoNetworkPageBuilderState extends State<VideoNetworkPageBuilder> {
-  late VideoPlayerController _controller;
-  int position = 0;
-  // double height = 0;
-  bool fullScreen = false;
-  bool hideAppBar = true;
-  bool hideControllBar = false;
-  String tips = '缓冲中...';
-  late IconData _icons;// = Icons.pause_circle_outline;
-  double dy = 0;
+class _VideoNetworkPageBuilderState extends State<VideoNetworkPageBuilder> {
+  /// Controller for the video player.
+  /// 视频播放的控制器
+  late final VideoPlayerController _controller;
+
+  /// Whether the controller has initialized.
+  /// 控制器是否已初始化
+  bool hasLoaded = false;
+
+  /// Whether there's any error when initialize the video controller.
+  /// 初始化视频控制器时是否发生错误
+  bool hasErrorWhenInitializing = false;
+
+  /// Whether the player is playing.
+  /// 播放器是否在播放
+  final ValueNotifier<bool> isPlaying = ValueNotifier<bool>(false);
+
+  /// Whether the controller is playing.
+  /// 播放控制器是否在播放
+  bool get isControllerPlaying => _controller.value.isPlaying;
+
+  // DefaultAssetPickerViewerBuilderDelegate get builder =>
+  //     widget.state.builder as DefaultAssetPickerViewerBuilderDelegate;
 
   @override
   void initState() {
     super.initState();
-    // print("widget.url==${widget.url}");
-    _controller = VideoPlayerController.network(widget.url
-//        "http://ipms.ujiaku.com/download/linshi/yunhujiao.mp4");
-//        "http://server.ujiaku.com/upload/2021/03/29/02c5766fd8ac7641.wav"
-    );
-    _controller.addListener(() {
-      if (_controller.value.hasError) {
-        print(_controller.value.errorDescription);
-        setState(() {
-          tips = '播放出错';
-        });
-      } else if (_controller.value.isInitialized) {
-        setState(() {
-          position = _controller.value.position.inSeconds;
-          tips = '';
-        });
-      } else if (_controller.value.isBuffering) {
-        setState(() {
-          tips = '缓冲中...';
-        });
-      }
-    });
-    _controller.initialize().then((_) {
-      if(widget.initPlay){
-        setState(() {
-          _controller.play();
-          _controller.setVolume(1);
-        });
-      }
-
-    });
-    _controller.setLooping(widget.isLoopPlay);
-//    height = 200;
-//     height = widget.height;
-    _icons = widget.initPlay?Icons.pause_circle_outline: Icons.play_circle_outline;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Positioned.fill(
-      child: Center(
-        child: Container(
-          color: Colors.black,
-          child: _controller.value.isInitialized
-              ? Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: InkWell(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      // 滑动控制音量、亮度、进度等操作
-                      GestureDetector(
-                        onVerticalDragStart: (details) {
-                          dy = 0;
-                        },
-                        onVerticalDragUpdate: (details) {
-                          dy += details.delta.dy;
-                          print('${details.delta.dy}  :  $dy');
-                          print(dy /
-                              MediaQuery.of(context).size.height);
-                          _controller.setVolume(1);
-                        },
-                        onVerticalDragEnd: (details) {},
-                        child: VideoPlayer(_controller),
-                      ),
-                      Text(
-                        tips,
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.white),
-                      )
-                    ],
-                  ),
-                  onTap: () {
-                    setState(() {
-                      hideControllBar = !hideControllBar;
-                    });
-                  },
-                ),
-              ),
-              // 播放器底部控制栏
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Offstage(
-                  offstage: hideControllBar,
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    color: Colors.black54,
-                    child: Row(children: <Widget>[
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            if (_controller.value.isPlaying) {
-                              _controller.pause();
-                              _icons = Icons.play_circle_outline;
-                            } else {
-                              _controller.play();
-                              _icons = Icons.pause_circle_outline;
-                            }
-                          });
-                        },
-                        child: Icon(
-                          _icons,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-
-                      Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Text(
-                        TimelineUtil.getCurrentPosition(position),
-                        style: const TextStyle(color: Colors.white),
-                      ),),
-
-                      // 进度条
-                      Expanded(
-                          child: LinearProgressIndicator(
-                            value: TimelineUtil.getProgress(position,
-                                _controller.value.duration.inSeconds),
-                            backgroundColor: Colors.black87,
-                          )),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        TimelineUtil.getCurrentPosition(
-                            _controller.value.duration.inSeconds),
-                        style: TextStyle(color: Colors.white),
-                      ),
-//                          SizedBox(
-//                            width: 10,
-//                          ),
-//                          InkWell(
-//                            child: Icon(
-//                              Icons.fullscreen,
-//                              color: Colors.white,
-//                              size: 30,
-//                            ),
-//                            onTap: () {
-//                              fullOrMin();
-//                            },
-//                          ),
-                    ]),
-                  ),
-                ),
-              ),
-            ],
-          )
-              : Container(
-            alignment: Alignment.center,
-            child: Text(
-              tips,
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget getAppBar() {
-    return PreferredSize(
-      // Offstage来控制AppBar的显示与隐藏
-        child: Offstage(
-          offstage: hideAppBar,
-          child: AppBar(
-            title: Text('VideoPlayer'),
-            primary: true,
-          ),
-        ),
-        preferredSize:
-        Size.fromHeight(MediaQuery.of(context).size.height * 0.07));
-  }
-
-  // 返回键拦截执行方法
-  Future<bool> _onWillPop() {
-    if (fullScreen) {
-      setState(() {
-        // height = 200;
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitUp,
-        ]);
-        SystemChrome.setEnabledSystemUIOverlays(
-            [SystemUiOverlay.top, SystemUiOverlay.bottom]);
-        hideAppBar = false;
-        fullScreen = !fullScreen;
-      });
-      return Future.value(false); //不退出
-    } else {
-      return Future.value(true); //退出
-    }
-  }
-
-  void fullOrMin() {
-    setState(() {
-      if (fullScreen) {
-        // height = 200;
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitUp,
-        ]);
-        SystemChrome.setEnabledSystemUIOverlays(
-            [SystemUiOverlay.top, SystemUiOverlay.bottom]);
-        hideAppBar = false;
-      } else {
-        hideAppBar = true;
-        // height = MediaQuery.of(context).size.height;
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeLeft,
-        ]);
-        SystemChrome.setEnabledSystemUIOverlays([]);
-      }
-      fullScreen = !fullScreen;
-    });
+    initializeVideoPlayerController();
   }
 
   @override
   void dispose() {
-    // print("摧毁video》》》》》");
+    /// Remove listener from the controller and dispose it when widget dispose.
+    /// 部件销毁时移除控制器的监听并销毁控制器。
+    _controller.removeListener(videoPlayerListener);
+    _controller.pause();
     _controller.dispose();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitUp,
-    ]);
     super.dispose();
+  }
+
+  /// Get media url from the asset, then initialize the controller and add with a listener.
+  /// 从资源获取媒体url后初始化，并添加监听。
+  Future<void> initializeVideoPlayerController() async {
+    // final String? url = await widget.asset.getMediaUrl();
+    // if (url == null) {
+    //   hasErrorWhenInitializing = true;
+    //   if (mounted) {
+    //     setState(() {});
+    //   }
+    //   return;
+    // }
+    _controller = VideoPlayerController.network(Uri.parse(widget.url).toString());
+    try {
+      await _controller.initialize();
+      hasLoaded = true;
+      _controller
+        ..addListener(videoPlayerListener)
+        ..setLooping(widget.hasOnlyOneVideoAndMoment);
+      if (widget.hasOnlyOneVideoAndMoment) {
+        _controller.play();
+      }
+    } catch (e) {
+      realDebugPrint('Error when initialize video controller: $e');
+      hasErrorWhenInitializing = true;
+    } finally {
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  /// Listener for the video player.
+  /// 播放器的监听方法
+  void videoPlayerListener() {
+    if (isControllerPlaying != isPlaying.value) {
+      isPlaying.value = isControllerPlaying;
+    }
+  }
+
+  /// Callback for the play button.
+  /// 播放按钮的回调
+  ///
+  /// Normally it only switches play state for the player. If the video reaches the end,
+  /// then click the button will make the video replay.
+  /// 一般来说按钮只切换播放暂停。当视频播放结束时，点击按钮将从头开始播放。
+  Future<void> playButtonCallback() async {
+    if (isPlaying.value) {
+      _controller.pause();
+    } else {
+      // if (builder.isDisplayingDetail.value) {
+      //   builder.switchDisplayingDetail(value: false);
+      // }
+      if (_controller.value.duration == _controller.value.position) {
+        _controller
+          ..seekTo(Duration.zero)
+          ..play();
+      } else {
+        _controller.play();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (hasErrorWhenInitializing) {
+      return Center(child: Text(Constants.textDelegate.loadFailed));
+    }
+    if (!hasLoaded) {
+      return const SizedBox.shrink();
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        Positioned.fill(
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
+            ),
+          ),
+        ),
+        if (!widget.hasOnlyOneVideoAndMoment)
+          ValueListenableBuilder<bool>(
+            valueListenable: isPlaying,
+            builder: (_, bool value, __) => GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap:playButtonCallback,
+              // value ? playButtonCallback : builder.switchDisplayingDetail,
+              child: Center(
+                child: AnimatedOpacity(
+                  duration: kThemeAnimationDuration,
+                  opacity: value ? 0.0 : 1.0,
+                  child: GestureDetector(
+                    onTap: playButtonCallback,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(color: Colors.black12)
+                        ],
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        value
+                            ? Icons.pause_circle_outline
+                            : Icons.play_circle_filled,
+                        size: 70.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
