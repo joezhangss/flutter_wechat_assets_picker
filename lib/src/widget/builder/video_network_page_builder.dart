@@ -4,6 +4,7 @@
 ///
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'package:wechat_assets_picker/src/constants/constants.dart';
 
@@ -140,7 +141,10 @@ class _VideoNetworkPageBuilderState extends State<VideoNetworkPageBuilder> {
       return Center(child: Text(Constants.textDelegate.loadFailed));
     }
     if (!hasLoaded) {
-      return const SizedBox.shrink();
+//       return const SizedBox.shrink();
+      return Center(
+        child: CupertinoActivityIndicator(),
+      );
     }
     return Stack(
       fit: StackFit.expand,
