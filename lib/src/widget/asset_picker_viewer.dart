@@ -4,22 +4,21 @@
 ///
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
 import '../constants/constants.dart';
 
-class AssetPickerViewer<A, P> extends StatefulWidget {
+class AssetPickerViewer<Asset, Path> extends StatefulWidget {
   const AssetPickerViewer({
     Key? key,
     required this.builder,
   }) : super(key: key);
 
-  final AssetPickerViewerBuilderDelegate<A, P> builder;
+  final AssetPickerViewerBuilderDelegate<Asset, Path> builder;
 
   @override
-  AssetPickerViewerState<A, P> createState() => AssetPickerViewerState<A, P>();
+  AssetPickerViewerState<Asset, Path> createState() =>
+      AssetPickerViewerState<Asset, Path>();
 
   /// Static method to push with the navigator.
   /// 跳转至选择预览的静态方法
@@ -33,6 +32,8 @@ class AssetPickerViewer<A, P> extends StatefulWidget {
     List<AssetEntity>? selectedAssets,
     SpecialPickerType? specialPickerType,
     int? maxAssets,
+    bool shouldReversePreview = false,
+    AssetSelectPredicate<AssetEntity>? selectPredicate,
   }) async {
     await AssetPicker.permissionCheck();
     final Widget viewer = AssetPickerViewer<AssetEntity, AssetPathEntity>(
@@ -48,6 +49,8 @@ class AssetPickerViewer<A, P> extends StatefulWidget {
         selectedAssets: selectedAssets,
         selectorProvider: selectorProvider,
         maxAssets: maxAssets,
+        shouldReversePreview: shouldReversePreview,
+        selectPredicate: selectPredicate,
       ),
     );
     final PageRouteBuilder<List<AssetEntity>> pageRoute =
@@ -83,9 +86,10 @@ class AssetPickerViewer<A, P> extends StatefulWidget {
   }
 }
 
-class AssetPickerViewerState<A, P> extends State<AssetPickerViewer<A, P>>
+class AssetPickerViewerState<Asset, Path>
+    extends State<AssetPickerViewer<Asset, Path>>
     with TickerProviderStateMixin {
-  AssetPickerViewerBuilderDelegate<A, P> get builder => widget.builder;
+  AssetPickerViewerBuilderDelegate<Asset, Path> get builder => widget.builder;
 
   @override
   void initState() {

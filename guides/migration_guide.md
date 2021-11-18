@@ -40,14 +40,20 @@ you can stop reading._
 
 #### `AssetPickerBuilderDelegate`
 
-- This delegate requires a new argument `initialPermission` with `PermissionState` type when using.
-  The intention of this change is to be capable with various of `PermissionState`.
+New arguments:
+- `PermissionState initialPermission`: The intention of this change is to be capable with various of `PermissionState`.
   If your delegate didn't require a permission check, you can pass `PermissionState.authorized` directly.
+- `keepScrollOffset`: To hold the provider and delegate without disposing,
+  and keep the scroll offset with the last picking.
 
+Other changes:
 - `assetsGridBuilder` is not implemented by default.
-
 - The `findChildIndexBuilder` and `assetsGridItemCount` methods have new signature.
   They require calculating placeholders count on iOS/macOS by default.
+
+#### `AssetPickerViewerBuilderDelegate`
+- Added the `isDisplayingDetail` notifier.
+- Added double tap animation series of fields.
 
 #### `AssetsPickerTextDelegate`
 
@@ -62,7 +68,7 @@ you can stop reading._
 Before:
 
 ```dart
-void switchPath(P pathEntity);
+void switchPath(Path pathEntity);
 ```
 
 After:
@@ -70,6 +76,10 @@ After:
 ```dart
 Future<void> switchPath([P? pathEntity]);
 ```
+
+### `SortPathDelegate`
+
+`SortPathDelegate` accepts a generic type `Path` now, and the type will be delivered to the `sort` method.
 
 ## 5.0.0
 
@@ -93,4 +103,4 @@ For how to implement a custom picker, see the example's custom page for more imp
   `previewAssets`.
 
 - If you have extended an `AssetPickerProvider` or `AssetPickerViewerProvider`, it now requires you
-  to pass generic type `A` and `P`, and handle the entities on your own.
+  to pass generic type `Asset` and `Path`, and handle the entities on your own.

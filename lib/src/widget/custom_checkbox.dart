@@ -1,27 +1,9 @@
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
-
-// ignore: implementation_imports
-import 'package:flutter/src/material/constants.dart';
-
-// ignore: implementation_imports
-import 'package:flutter/src/material/debug.dart';
-
-// ignore: implementation_imports
-import 'package:flutter/src/material/material_state.dart';
-
-// ignore: implementation_imports
-import 'package:flutter/src/material/theme.dart';
-
-// ignore: implementation_imports
-import 'package:flutter/src/material/theme_data.dart';
 
 // Duration of the animation that moves the toggle from one state to another.
 const Duration _kToggleDuration = Duration(milliseconds: 200);
@@ -403,17 +385,23 @@ class _CustomCheckboxState extends State<CustomCheckbox>
         break;
       case MaterialTapTargetSize.shrinkWrap:
         size = const Size(
-            kMinInteractiveDimension - 8.0, kMinInteractiveDimension - 8.0);
+          kMinInteractiveDimension - 8.0,
+          kMinInteractiveDimension - 8.0,
+        );
         break;
     }
     size += effectiveVisualDensity.baseSizeAdjustment;
     final BoxConstraints additionalConstraints = BoxConstraints.tight(size);
     final MouseCursor effectiveMouseCursor =
         MaterialStateProperty.resolveAs<MouseCursor?>(
-                widget.mouseCursor, _states) ??
+              widget.mouseCursor,
+              _states,
+            ) ??
             themeData.checkboxTheme.mouseCursor?.resolve(_states) ??
             MaterialStateProperty.resolveAs<MouseCursor>(
-                MaterialStateMouseCursor.clickable, _states);
+              MaterialStateMouseCursor.clickable,
+              _states,
+            );
     // Colors need to be resolved in selected and non selected states separately
     // so that they can be lerped between.
     final Set<MaterialState> activeStates = _states
@@ -1303,12 +1291,23 @@ abstract class RenderToggleable extends RenderConstrainedBox {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(FlagProperty('value',
-        value: value, ifTrue: 'checked', ifFalse: 'unchecked', showName: true));
-    properties.add(FlagProperty('isInteractive',
+    properties.add(
+      FlagProperty(
+        'value',
+        value: value,
+        ifTrue: 'checked',
+        ifFalse: 'unchecked',
+        showName: true,
+      ),
+    );
+    properties.add(
+      FlagProperty(
+        'isInteractive',
         value: isInteractive,
         ifTrue: 'enabled',
         ifFalse: 'disabled',
-        defaultValue: true));
+        defaultValue: true,
+      ),
+    );
   }
 }

@@ -6,22 +6,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:wechat_assets_picker/src/constants/constants.dart';
+import '../../../src/constants/constants.dart';
+import '../scale_text.dart';
 
 class AudioPageBuilder extends StatefulWidget {
-  const AudioPageBuilder({
-    Key? key,
-    required this.asset,
-    required this.state,
-  }) : super(key: key);
+  const AudioPageBuilder({Key? key, required this.asset}) : super(key: key);
 
   /// Asset currently displayed.
   /// 展示的资源
   final AssetEntity asset;
-
-  /// [State] for asset picker viewer.
-  /// 资源查看器的状态 [State]
-  final AssetPickerViewerState<AssetEntity, AssetPathEntity> state;
 
   @override
   State<StatefulWidget> createState() => _AudioPageBuilderState();
@@ -106,9 +99,9 @@ class _AudioPageBuilderState extends State<AudioPageBuilder> {
   /// Title widget.
   /// 标题组件
   Widget get titleWidget {
-    return Text(
+    return ScaleText(
       widget.asset.title ?? '',
-      style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.normal),
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
     );
   }
 
@@ -124,14 +117,14 @@ class _AudioPageBuilderState extends State<AudioPageBuilder> {
         }
       },
       child: Container(
-        margin: const EdgeInsets.all(20.0),
+        margin: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
           boxShadow: <BoxShadow>[BoxShadow(color: Colors.black12)],
           shape: BoxShape.circle,
         ),
         child: Icon(
           isPlaying ? Icons.pause_circle_outline : Icons.play_circle_filled,
-          size: 70.0,
+          size: 70,
         ),
       ),
     );
@@ -144,12 +137,12 @@ class _AudioPageBuilderState extends State<AudioPageBuilder> {
       initialData: Duration.zero,
       stream: durationStreamController.stream,
       builder: (BuildContext _, AsyncSnapshot<Duration> data) {
-        return Text(
+        return ScaleText(
           '${Constants.textDelegate.durationIndicatorBuilder(data.data!)}'
           ' / '
           '${Constants.textDelegate.durationIndicatorBuilder(assetDuration)}',
           style: const TextStyle(
-            fontSize: 20.0,
+            fontSize: 20,
             fontWeight: FontWeight.normal,
           ),
         );

@@ -4,18 +4,14 @@
 ///
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../constants/constants.dart';
 
-class AssetPicker<A, P> extends StatefulWidget {
-  const AssetPicker({
-    Key? key,
-    required this.builder,
-  }) : super(key: key);
+class AssetPicker<Asset, Path> extends StatefulWidget {
+  const AssetPicker({Key? key, required this.builder}) : super(key: key);
 
-  final AssetPickerBuilderDelegate<A, P> builder;
+  final AssetPickerBuilderDelegate<Asset, Path> builder;
 
   static Future<PermissionState> permissionCheck() async {
     final PermissionState _ps = await PhotoManager.requestPermissionExtend();
@@ -40,13 +36,15 @@ class AssetPicker<A, P> extends StatefulWidget {
     SpecialPickerType? specialPickerType,
     Color? themeColor,
     ThemeData? pickerTheme,
-    SortPathDelegate? sortPathDelegate,
+    SortPathDelegate<AssetPathEntity>? sortPathDelegate,
     AssetsPickerTextDelegate? textDelegate,
     FilterOptionGroup? filterOptions,
     WidgetBuilder? specialItemBuilder,
     IndicatorBuilder? loadingIndicatorBuilder,
     SpecialItemPosition specialItemPosition = SpecialItemPosition.none,
     bool allowSpecialItemWhenEmpty = false,
+    AssetSelectPredicate<AssetEntity>? selectPredicate,
+    bool? shouldRevertGrid,
     bool useRootNavigator = true,
     Curve routeCurve = Curves.easeIn,
     Duration routeDuration = const Duration(milliseconds: 300),
@@ -112,6 +110,8 @@ class AssetPicker<A, P> extends StatefulWidget {
           specialItemBuilder: specialItemBuilder,
           loadingIndicatorBuilder: loadingIndicatorBuilder,
           allowSpecialItemWhenEmpty: allowSpecialItemWhenEmpty,
+          selectPredicate: selectPredicate,
+          shouldRevertGrid: shouldRevertGrid,
         ),
       ),
     );
@@ -130,26 +130,29 @@ class AssetPicker<A, P> extends StatefulWidget {
 
   /// Call the picker with provided [delegate] and [provider].
   /// 通过指定的 [delegate] 和 [provider] 调用选择器
-  static Future<List<A>?> pickAssetsWithDelegate<A, P>(
+  static Future<List<Asset>?> pickAssetsWithDelegate<Asset, Path,
+      PickerProvider extends AssetPickerProvider<Asset, Path>>(
     BuildContext context, {
-    required AssetPickerBuilderDelegate<A, P> delegate,
-    required AssetPickerProvider<A, P> provider,
+    required AssetPickerBuilderDelegate<Asset, Path> delegate,
+    required PickerProvider provider,
     bool useRootNavigator = true,
     Curve routeCurve = Curves.easeIn,
     Duration routeDuration = const Duration(milliseconds: 300),
   }) async {
     await permissionCheck();
 
-    final Widget picker =
-        ChangeNotifierProvider<AssetPickerProvider<A, P>>.value(
+    final Widget picker = ChangeNotifierProvider<PickerProvider>.value(
       value: provider,
-      child: AssetPicker<A, P>(key: Constants.pickerKey, builder: delegate),
+      child: AssetPicker<Asset, Path>(
+        key: Constants.pickerKey,
+        builder: delegate,
+      ),
     );
-    final List<A>? result = await Navigator.of(
+    final List<Asset>? result = await Navigator.of(
       context,
       rootNavigator: useRootNavigator,
-    ).push<List<A>>(
-      AssetPickerPageRoute<List<A>>(
+    ).push<List<Asset>>(
+      AssetPickerPageRoute<List<Asset>>(
         builder: picker,
         transitionCurve: routeCurve,
         transitionDuration: routeDuration,
@@ -190,13 +193,10 @@ class AssetPicker<A, P> extends StatefulWidget {
   /// 通过主题色构建一个默认的暗黑主题
   static ThemeData themeData(Color themeColor) {
     return ThemeData.dark().copyWith(
-      buttonColor: themeColor,
       primaryColor: Colors.grey[900],
       primaryColorBrightness: Brightness.dark,
       primaryColorLight: Colors.grey[900],
       primaryColorDark: Colors.grey[900],
-      accentColor: themeColor,
-      accentColorBrightness: Brightness.dark,
       canvasColor: Colors.grey[850],
       scaffoldBackgroundColor: Colors.grey[900],
       bottomAppBarColor: Colors.grey[900],
@@ -210,9 +210,13 @@ class AssetPicker<A, P> extends StatefulWidget {
       ),
       indicatorColor: themeColor,
       appBarTheme: const AppBarTheme(
-        brightness: Brightness.dark,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarBrightness: Brightness.dark,
+          statusBarIconBrightness: Brightness.light,
+        ),
         elevation: 0,
       ),
+      buttonTheme: ButtonThemeData(buttonColor: themeColor),
       colorScheme: ColorScheme(
         primary: Colors.grey[900]!,
         primaryVariant: Colors.grey[900]!,
@@ -232,16 +236,16 @@ class AssetPicker<A, P> extends StatefulWidget {
   }
 
   @override
-  AssetPickerState<A, P> createState() => AssetPickerState<A, P>();
+  AssetPickerState<Asset, Path> createState() =>
+      AssetPickerState<Asset, Path>();
 }
 
-class AssetPickerState<A, P> extends State<AssetPicker<A, P>>
+class AssetPickerState<Asset, Path> extends State<AssetPicker<Asset, Path>>
     with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
-    PhotoManager.setLog(!kReleaseMode);
     AssetPicker.registerObserve(_onLimitedAssetsUpdated);
   }
 
@@ -259,7 +263,10 @@ class AssetPickerState<A, P> extends State<AssetPicker<A, P>>
   void dispose() {
     WidgetsBinding.instance!.removeObserver(this);
     AssetPicker.unregisterObserve(_onLimitedAssetsUpdated);
-    widget.builder.dispose();
+    // Skip delegate's dispose when it's keeping scroll offset.
+    if (!widget.builder.keepScrollOffset) {
+      widget.builder.dispose();
+    }
     super.dispose();
   }
 
@@ -267,9 +274,16 @@ class AssetPickerState<A, P> extends State<AssetPicker<A, P>>
     if (!widget.builder.isPermissionLimited) {
       return;
     }
-    await widget.builder.provider.getAssetPathList();
     if (widget.builder.provider.currentPathEntity != null) {
-      await widget.builder.provider.switchPath();
+      final Path? _currentPathEntity =
+          widget.builder.provider.currentPathEntity;
+      if (_currentPathEntity is AssetPathEntity) {
+        await _currentPathEntity.refreshPathProperties();
+      }
+      await widget.builder.provider.switchPath(_currentPathEntity);
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 

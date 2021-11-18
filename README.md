@@ -11,42 +11,37 @@
 [![GitHub forks](https://img.shields.io/github/forks/fluttercandies/flutter_wechat_assets_picker?logo=github&style=flat-square)](https://github.com/fluttercandies/flutter_wechat_assets_picker/network)
 <a target="_blank" href="https://jq.qq.com/?_wv=1027&k=5bcc0gy"><img border="0" src="https://pub.idqqimg.com/wpa/images/group.png" alt="FlutterCandies" title="FlutterCandies"></a>
 
-Language: English | [中文简体](README-ZH.md)
+Language: English | [中文](README-ZH.md)
 
-An **assets picker** which looks like the one in WeChat,
-based on `photo_manager` for asset implementation,
+An **assets picker** which based on the WeChat's UI,
+using `photo_manager` for asset implementation,
 `extended_image` for image preview,
 and `provider` to help control the state of the picker.
 
 To take a photo or a video for assets, please check the detailed usage in the example, and head over to
-[wechat_camera_picker](https://fluttercandies.github.io/flutter_wechat_camera_picker/) .
+[wechat_camera_picker](https://pub.dev/packages/wechat_camera_picker).
 
-All UI designs are based on WeChat 7.x, and it will be updated following the WeChat update in anytime.
-
-*Note:* You can file PRs to create your own implementation if you found your implementation might be useful for others.
-See [Contribute custom implementations](example/lib/customs/CONTRIBUTING.md) for more details.
+All UI designs are based on WeChat 8.x, and it will be updated following the WeChat update in anytime.
 
 ## Category 🗂
 
-* [Migration Guide](#migration-guide-%EF%B8%8F)
+* [Migration Guide](#migration-guide-)
 * [Features](#features-)
 * [Screenshots](#screenshots-)
 * [Preparing for use](#preparing-for-use-)
-  * [Version constraints](#version-constraints)
+  * [Versions compatibility](#version-compatibility)
   * [Flutter](#flutter)
   * [Android](#android)
   * [iOS](#ios)
-  * [MacOS](#macos)
+  * [macOS](#macos)
 * [Usage](#usage-)
   * [Simple usage](#simple-usage)
-  * [Complete param usage](#complete-param-usage)
+  * [Detailed usage](#detailed-usage)
   * [Display selected assets](#display-selected-assets)
   * [Register assets change observe callback](#register-assets-change-observe-callback)
   * [Customize with your own type or UI](#customize-with-your-own-type-or-ui)
-* [Classes Introduction](#classes-introduction-)
-  * [`AssetEntity`](#assetentity)
 * [Frequently asked question](#frequently-asked-question-)
-  * [Build failed with `Unresolved reference: R`](#build-failed-with-unresolved-reference-r)
+  * [Execution failed for task ':photo_manager:compileDebugKotlin'](#execution-failed-for-task-photo_managercompiledebugkotlin)
   * [How can I get path from the `AssetEntity` to integrate with `File` object, upload or edit?](#how-can-i-get-path-from-the-assetentity-to-integrate-with-file-object-upload-or-edit)
   * [How can I change the name of "Recent" or other entities name/properties?](#how-can-i-change-the-name-of-recent-or-other-entities-nameproperties)
   * [Create `AssetEntity` from `File` or `Uint8List` (rawData)](#create-assetentity-from-file-or-uint8list-rawdata)
@@ -60,7 +55,7 @@ See [Migration Guide](guides/migration_guide.md).
 ## Features ✨
 
 - ♻️ Fully implementable with delegates override
-- 💚 99% simillar to WeChat style
+- 💚 99% similar to WeChat style
 - ⚡️ Adjustable performance according to parameters
 - 📷 Image asset support
   - 🔬 HEIC/HEIF Image type support
@@ -73,28 +68,35 @@ See [Migration Guide](guides/migration_guide.md).
 - 🗂 Custom sort path delegate support
 - 📝 Custom text delegate support
 - ⏳ Custom filter options support ( `photo_manager` )
-- 🎏 Custom theme entirely
-- 💻 MacOS support
+- 🎏 Fully customizable theme
+- 💻 macOS support
 
 ## Screenshots 📸
 
-| ![1](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5plm5wlj30u01t0zp7.jpg) | ![2](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5q69848j30u01t04o5.jpg) | ![3](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5q60v9qj30u01t07vh.jpg) |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![4](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5q5qe7jj30u01t04qp.jpg) | ![5](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5q5jobgj30u01t0ngi.jpg) | ![6](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5q5cebej30u01t04a0.jpg) |
-| ![7](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5q56xuhj30u01t077a.jpg) | ![8](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5q50otnj30u01t0kjf.jpg) | ![9](https://tva1.sinaimg.cn/large/007S8ZIlgy1ggo5q4o7x5j30u01t0e81.jpg) |
+| ![1](https://pic.alexv525.com/2021-07-05-picker_1.jpg)   | ![2](https://pic.alexv525.com/2021-07-05-picker_2.jpg)   | ![3](https://pic.alexv525.com/2021-07-05-picker_3.jpg)   |
+| -------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
+| ![4](https://pic.alexv525.com/2021-07-05-picker_4.jpg)   | ![5](https://pic.alexv525.com/2021-07-05-picker_5.jpg)   | ![6](https://pic.alexv525.com/2021-07-05-picker_6.jpg)   |
+| ![7](https://pic.alexv525.com/2021-07-06-picker_7.jpg)   | ![8](https://pic.alexv525.com/2021-07-05-picker_8.jpg)   | ![9](https://pic.alexv525.com/2021-07-05-picker_9-1.jpg) |
+| ![10](https://pic.alexv525.com/2021-07-05-picker_10.png) | ![10](https://pic.alexv525.com/2021-07-05-picker_11.png) | ![12](https://pic.alexv525.com/2021-07-05-picker_12.png) |
 
 ## READ THIS FIRST ‼️
 
 Although the package provides assets selection, it still requires users to build their own methods
-to handle upload, image compress, etc. If you have any questions about how to build them, please run the example or refer to [photo_manager](https://github.com/CaiJingLong/flutter_photo_manager) for API usage.
+to handle upload, image compress, etc. If you have any questions about how to build them,
+please run the example or refer to [photo_manager](https://github.com/CaiJingLong/flutter_photo_manager) for API usage.
 
 ## Preparing for use 🍭
 
-### Version constraints
+### Versions compatibility
 
-Flutter SDK: `>=2.0.0` .
+|        | 2.0.0 | 2.2.0 | 2.5.0 |
+|--------|:-----:|:-----:|:-----:|
+| 6.2.1+ |   ❌   |   ❌   |   ✅   |
+| 6.2.0  |   ✅   |   ✅   |   ✅   |
+| 5.0.0+ |   ✅   |  N/A  |  N/A  |
 
-If you got a `resolve conflict` error when running `flutter pub get` , please use `dependency_overrides` to fix it. See [here](#version-resolve-conflict-with-xxx-eg-dartx) .
+If you got a `resolve conflict` error when running `flutter pub get`,
+please use `dependency_overrides` to fix it. See [here](#version-resolve-conflict-with-xxx-eg-dartx) .
 
 ### Flutter
 
@@ -116,8 +118,11 @@ import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 ### Android
 
 Required permissions: `INTERNET`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`, `ACCESS_MEDIA_LOCATION`.
+If you don't need the `ACCESS_MEDIA_LOCATION` permission,
+see [Disable `ACCESS_MEDIA_LOCATION` permission](#disable-access_media_location-permission).
 
-If you found some warning logs with `Glide` appearing, then the main project needs an implementation of `AppGlideModule`. 
+If you found some warning logs with `Glide` appearing,
+then the main project needs an implementation of `AppGlideModule`.
 See [Generated API](https://sjudd.github.io/glide/doc/generatedapi.html).
 
 ### iOS
@@ -128,7 +133,6 @@ platform :ios, '9.0'
 ```
 
 2. Add the following content to `info.plist`.
-
 ```
 <key>NSAppTransportSecurity</key>
 <dict>
@@ -139,7 +143,7 @@ platform :ios, '9.0'
 <string>Replace with your permission description.</string>
 ```
 
-### MacOS
+### macOS
 
 1. Platform version has to be at least *10.15*. Modify `macos/Podfile` and update accordingly.
 ```ruby
@@ -174,7 +178,10 @@ platform :osx, '10.15'
 | filterOptions             | `FilterOptionGroup?`        | Allow users to customize assets filter options.              | `null`                              |
 | specialItemBuilder        | `WidgetBuilder?`            | The widget builder for the special item.                     | `null`                              |
 | specialItemPosition       | `SpecialItemPosition`       | Allow users set a special item in the picker with several positions. | `SpecialItemPosition.none`          |
+| loadingIndicatorBuilder   | `IndicatorBuilder?`         | Indicates the loading status for the builder.                | `null`                              |
 | allowSpecialItemWhenEmpty | `bool`                      | Whether the special item will display or not when assets is empty. | `false`                             |
+| selectPredicate           | `AssetSelectPredicate`      | Predicate whether an asset can be selected or unselected.    | `null`                              |
+| shouldRevertGrid          | `bool?`                     | Whether the assets grid should revert.                       | `null`                              |
 | routeCurve                | `Curve`                     | The curve which the picker use to build page route transition. | `Curves.easeIn`                     |
 | routeDuration             | `Duration`                  | The duration which the picker use to build page route transition. | `const Duration(milliseconds: 500)` |
 
@@ -184,21 +191,57 @@ platform :osx, '10.15'
 final List<AssetEntity> assets = await AssetPicker.pickAssets(context);
 ```
 
-or
+### Using custom delegate
 
 ```dart
-AssetPicker.pickAsset(context).then((List<AssetEntity> assets) {
-  /.../
-});
+final YourAssetPickerProvider provider = yourProvider;
+final CustomAssetPickerBuilderDelegate builder = yourBuilder(provider);
+final List<YourAssetEntity>? result = await AssetPicker.pickAssetsWithDelegate(
+  context,
+  provider: provider,
+  delegate: builder,
+);
 ```
 
-### Complete param usage
+You can use the `keepScrollOffset` feature only with the `pickAssetsWithDelegate` method.
+See the `Keep scroll offset` pick method in the example for how to implement it.
 
-For various type of the picker, head over to the example and run it with no doubt.
+### Detailed usage
+
+TL;DR, we've put multiple common usage with the packages into the [example](example).
+
+#### Regular picking
+
+You can both found `List<PickMethod> pickMethods` in
+`example/lib/pages/multi_assets_page.dart` and `example/lib/pages/single_assets_page.dart`,
+which provide methods in multiple picking and single picking mode.
+Assets will be stored temporary and displayed at the below of the page.
+
+##### Multiple assets picking
+
+The maximum assets limit is `9` in the multiple picking page,
+and you can modify it as you wish.
+
+Some methods can only work with multiple mode, such as "WeChat Moment".
+
+##### Single asset picking
+
+Only one and maximum to one asset can be picked at once.
+
+#### Custom pickers
+
+You can try custom pickers with the "Custom" page.
+We only defined a picker that integrates with `Directory` and `File`
+(completely out of the `photo_manager` scope).
+You can submit PRs to create your own implementation
+if you found your implementation might be useful for others.
+See [Contribute custom implementations][lib/customs/CONTRIBUTING.md]
+for more details.
 
 ### Display selected assets
 
-The `AssetEntityImageProvider` can display the thumb image of _images & videos_, and the original data of _image_. Use it like a common `ImageProvider`.
+The `AssetEntityImageProvider` can display the thumb image of _images & videos_, and the original data of _image_.
+Use it like a common `ImageProvider`.
 
 ```dart
 Image(image: AssetEntityImageProvider(asset, isOriginal: false))
@@ -222,109 +265,13 @@ AssetPicker.unregisterObserve(); // Unregister callback.
 type with generic type `<A: Asset, P: Path>`, then implement abstract methods. See the `Custom` page
 in the example which has an implementation based on `<File, Directory>` types.
 
-## Classes Introduction 💭
-
-### `AssetEntity`
-
-```dart
-/// Android: Database _id column
-/// iOS    : `PhotoKit > PHObject > localIdentifier`
-String id;
-
-/// Android: `MediaStore.MediaColumns.DISPLAY_NAME`
-/// iOS    : `PHAssetResource.filename`. Nullable
-/// If you must need it, See [FilterOption.needTitle] or use [titleAsync].
-String title;
-
-/// Android: title
-/// iOS    : [PHAsset valueForKey:@"filename"]
-Future<String> get titleAsync;
-
-/// * 1: [AssetType.image]
-/// * 2: [AssetType.video]
-/// * 3: [AssetType.audio]
-/// * default: [AssetType.other]
-AssetType get type;
-
-/// Asset type int value.
-int typeInt;
-
-/// Duration of video, the unit is second.
-/// If [type] is [AssetType.image], then it's value is 0.
-/// See also: [videoDuration].
-int duration;
-
-/// Width of the asset.
-int width;
-
-/// Height of the asset.
-int height;
-
-/// Location information when shooting. Nullable.
-/// When the device is Android 10 or above, it's ALWAYS null.
-/// See also: [longitude].
-double get latitude => _latitude ?? 0;
-/// Also with a setter.
-
-/// Get lat/lng from `MediaStore`(Android) / `Photos`(iOS).
-/// In Android Q, this comes from EXIF.
-Future<LatLng> latlngAsync();
-
-/// Get [File] object.
-/// Notice that this is not the origin file, so when it comes to some
-/// scene like reading a GIF's file, please use `originFile`, or you'll
-/// get a JPG.
-Future<File> get file async;
-
-/// Get the original [File] object.
-Future<File> get originFile async;
-
-/// The raw data for the entity, it may be large.
-/// This property is NOT RECOMMENDED for video assets.
-Future<Uint8List> get originBytes;
-
-/// The thumbnail data for the entity. Usually use for displaying a thumbnail image widget.
-Future<Uint8List> get thumbData;
-
-/// Get thumbnail data with specific size.
-Future<Uint8List> thumbDataWithSize(
-  int width,
-  int height, {
-  ThumbFormat format = ThumbFormat.jpeg,
-  int quality = 100,
-});
-
-/// Get the asset's size. Nullable if the manager is null,
-Size get size;
-
-/// If the asset is deleted, return false.
-Future<bool> get exists => PhotoManager._assetExistsWithId(id);
-
-/// The url is provided to some video player. Such as [flutter_ijkplayer](https://pub.dev/packages/flutter_ijkplayer)
-///
-/// Android: `content://media/external/video/media/894857`
-/// iOS    : `file:///var/mobile/Media/DCIM/118APPLE/IMG_8371.MOV` in iOS.
-Future<String> getMediaUrl();
-
-/// Refresh the properties for the entity.
-Future<AssetEntity> refreshProperties() async;
-```
-
 ## Frequently asked question ❔
 
-### Build failed with `Unresolved reference: R`
+### Execution failed for task ':photo_manager:compileDebugKotlin'
 
-```groovy
-e: <path>\photo_manager-x.y.z\android\src\main\kotlin\top\kikt\imagescanner\core\PhotoManagerDeleteManager.kt: (116, 36): Unresolved reference: R
-e: <path>\photo_manager-x.y.z\android\src\main\kotlin\top\kikt\imagescanner\core\PhotoManagerDeleteManager.kt: (119, 36): Unresolved reference: createTrashRequest
-e: <path>\photo_manager-x.y.z\android\src\main\kotlin\top\kikt\imagescanner\core\PhotoManagerPlugin.kt: (341, 84): Unresolved reference: R
-e: <path>\photo_manager-x.y.z\android\src\main\kotlin\top\kikt\imagescanner\core\utils\Android30DbUtils.kt: (34, 34): Unresolved reference: R
-e: <path>\photo_manager-x.y.z\android\src\main\kotlin\top\kikt\imagescanner\core\utils\IDBUtils.kt: (27, 67): Unresolved reference: R
+See [photo_manager#561][] for more details.
 
-FAILURE: Build failed with an exception.
-```
-
-Run `flutter clean` first.
+[photo_manager#561]: https://github.com/CaiJingLong/flutter_photo_manager/issues/561
 
 ### How can I get path from the `AssetEntity` to integrate with `File` object, upload or edit?
 
@@ -332,17 +279,24 @@ You don't need it (might be).
 
 You can always request the `File` object with `entity.originFile`, if `Uint8List` then `entity.originBytes`.
 
-If you still needs path after requested the `File`, get it through `file.absolutePath`.
+If you still need path after requested the `File`, get it through `file.absolutePath`.
 
 ### How can I change the name of "Recent" or other entities name/properties?
 
-The path entity called "Recent", brought by `photo_manager` in the path entities list, includes all `AssetEntity` on your device. "Recent" is a system named entity in most of platforms. While we provided ability to customize the text delegate, the name/properties can only be updated with `SortPathDelegate` . This is the only way that you have access to all path entities, or the only way that we exposed currently.
+The path entity called "Recent", brought by `photo_manager` in the path entities list,
+includes all `AssetEntity` on your device.
+"Recent" is a system named entity in most platforms.
+While we provided ability to customize the text delegate,
+the name/properties can only be updated with `SortPathDelegate`.
+This is the only way that you have access to all path entities,
+or the only way that we exposed currently.
 
-To change the name of the path entity, extend the `SortPathDelegate` with your own delegate, then write something like the code below:
+To change the name of the path entity, extend the `CommonSortPathDelegate` with your own delegate,
+then write something like the code below:
 
 ```dart
 /// Create your own sort path delegate.
-class CustomSortPathDelegate extends SortPathDelegate {
+class CustomSortPathDelegate extends CommonSortPathDelegate {
   const CustomSortPathDelegate();
 
   @override
@@ -369,7 +323,8 @@ Pass the delegate through the static call method, then you will get a self-named
 
 ### Create `AssetEntity` from `File` or `Uint8List` (rawData)
 
-In order to combine this package with camera shooting or something related, there's a solution about how to create an `AssetEntity` with `File` or `Uint8List` object.
+In order to combine this package with camera shooting or something related,
+there's a solution about how to create an `AssetEntity` with `File` or `Uint8List` object.
 
 ```dart
 final File file = your_file; // Your file object
@@ -377,7 +332,8 @@ final Uint8List byteData = await file.readAsBytes(); // Convert to Uint8List
 final AssetEntity imageEntity = await PhotoManager.editor.saveImage(byteData); // Saved in the device then create an AssetEntity
 ```
 
-If you don't want to keep the asset in your device, just delete it after you complete with your process (upload, editing, etc).
+If you don't want to keep the asset in your device,
+just delete it after you complete with your process (upload, editing, etc).
 
 ```dart
 final List<String> result = await PhotoManager.editor.deleteWithIds([entity.id]);
@@ -388,10 +344,13 @@ ref: [flutter_photo_manager#insert-new-item](https://github.com/CaiJingLong/flut
 ### Glide warning 'Failed to find GeneratedAppGlideModule'
 
 ```
-W/Glide   (21133): Failed to find GeneratedAppGlideModule. You should include an annotationProcessor complie dependency on com.github.bumptech.glide:compiler in you application ana a @GlideModule annotated AppGlideModule implementation or LibraryGlideModules will be silently ignored.
+W/Glide   (21133): Failed to find GeneratedAppGlideModule. You should include an annotationProcessor compile dependency on com.github.bumptech.glide:compiler in you application ana a @GlideModule annotated AppGlideModule implementation or LibraryGlideModules will be silently ignored.
 ```
 
-`Glide` needs annotation to keep singleton, prevent conflict between instances and versions, so while the photo manager uses `Glide` to implement image features, the project which import this should define its own `AppGlideModule`. See [Android](#android) section for implementation.
+`Glide` needs annotation to keep singleton, prevent conflict between instances and versions,
+so while the photo manager uses `Glide` to implement image features,
+the project which import this should define its own `AppGlideModule`.
+See [Android](#android) section for implementation.
 
 ### Disable `ACCESS_MEDIA_LOCATION` permission
 
@@ -429,6 +388,8 @@ Many thanks to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/NaikSoftware"><img src="https://avatars.githubusercontent.com/u/4218994?v=4?s=50" width="50px;" alt=""/><br /><sub><b>Nickolay Savchenko</b></sub></a><br /><a href="#design-NaikSoftware" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/KosukeSaigusa"><img src="https://avatars.githubusercontent.com/u/13669049?v=4?s=50" width="50px;" alt=""/><br /><sub><b>Kosuke Saigusa</b></sub></a><br /><a href="#translation-KosukeSaigusa" title="Translation">🌍</a></td>
     <td align="center"><a href="https://github.com/Jon-Millent"><img src="https://avatars.githubusercontent.com/u/17584565?v=4?s=50" width="50px;" alt=""/><br /><sub><b>三闻书店</b></sub></a><br /><a href="https://github.com/fluttercandies/flutter_wechat_assets_picker/commits?author=Jon-Millent" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/didiosn"><img src="https://avatars.githubusercontent.com/u/15895051?v=4?s=50" width="50px;" alt=""/><br /><sub><b>DidiosFaust</b></sub></a><br /><a href="#translation-didiosn" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/ConanXie"><img src="https://avatars.githubusercontent.com/u/10040846?v=4?s=50" width="50px;" alt=""/><br /><sub><b>xiejie</b></sub></a><br /><a href="https://github.com/fluttercandies/flutter_wechat_assets_picker/issues?q=author%3AConanXie" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
@@ -442,8 +403,10 @@ Contributions of any kind welcomed!!
 
 ## Acknowledgement
 
-> Every aspect of IntelliJ IDEA has been designed to maximize developer productivity. Together, intelligent coding assistance and ergonomic design make development not only productive but also enjoyable.
+> Every aspect of IntelliJ IDEA has been designed to maximize developer productivity.
+Together, intelligent coding assistance and ergonomic design make development not only productive but also enjoyable.
 
-Thanks to [JetBrains](https://www.jetbrains.com/?from=fluttercandies) for allocating free open-source licenses for IDEs such as [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=fluttercandies).
+Thanks to [JetBrains](https://www.jetbrains.com/?from=fluttercandies) for allocating free open-source licenses for IDEs
+such as [IntelliJ IDEA](https://www.jetbrains.com/idea/?from=fluttercandies).
 
 [<img src=".github/jetbrains-variant.png" width="200"/>](https://www.jetbrains.com/?from=fluttercandies)

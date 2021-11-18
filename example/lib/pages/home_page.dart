@@ -5,13 +5,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../constants/extensions.dart';
-import '../constants/resource.dart';
 import '../constants/screens.dart';
-
 import '../customs/custom_picker_page.dart';
+import '../main.dart';
 import 'multi_assets_page.dart';
 import 'single_assets_page.dart';
+
+bool get currentIsDark =>
+    Screens.mediaQuery.platformBrightness == Brightness.dark;
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -51,55 +52,55 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget get header => Container(
-        margin: const EdgeInsetsDirectional.only(top: 30.0),
-        height: 60.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            AspectRatio(
-              aspectRatio: 1.0,
-              child: Hero(
-                tag: 'LOGO',
-                child: Image.asset(
-                  R.ASSETS_FLUTTER_CANDIES_LOGO_PNG,
+  Widget header(BuildContext context) {
+    return Container(
+      margin: const EdgeInsetsDirectional.only(top: 30.0),
+      height: 60.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          AspectRatio(
+            aspectRatio: 1.0,
+            child: Hero(
+              tag: 'LOGO',
+              child: Image.asset('assets/flutter_candies_logo.png'),
+            ),
+          ),
+          const SizedBox(width: 10.0),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text(
+                'WeChat Asset Picker',
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-            const SizedBox(width: 10.0),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const Text(
-                  'WeChat Asset Picker',
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Demo for the package.',
-                  style: context.themeData.textTheme.caption,
-                ),
-              ],
-            ),
-            const SizedBox(width: 20.0),
-          ],
-        ),
-      );
+              Text(
+                packageInfo == null ? 'Unknown version' : packageInfo!.version,
+                style: Theme.of(context).textTheme.caption,
+              ),
+            ],
+          ),
+          const SizedBox(width: 20.0),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: Screens.mediaQuery.platformBrightness.isDark
+      value: currentIsDark
           ? SystemUiOverlayStyle.light
           : SystemUiOverlayStyle.dark,
       child: Scaffold(
         body: SafeArea(
           child: Column(
             children: <Widget>[
-              header,
+              header(context),
               Expanded(
                 child: PageView(
                   controller: controller,

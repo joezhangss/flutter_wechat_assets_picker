@@ -6,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 
+/// Define a regular pick method.
 class PickMethod {
   const PickMethod({
     required this.icon,
     required this.name,
     required this.description,
     required this.method,
+    this.onLongPress,
   });
 
   factory PickMethod.image(int maxAssetsCount) {
@@ -120,15 +122,16 @@ class PickMethod {
                   context,
                   enableRecording: true,
                 );
-                if (result != null) {
-                  final AssetPicker<AssetEntity, AssetPathEntity> picker =
-                      context.findAncestorWidgetOfExactType()!;
-                  final DefaultAssetPickerProvider p =
-                      picker.builder.provider as DefaultAssetPickerProvider;
-                  await p.currentPathEntity!.refreshPathProperties();
-                  await p.switchPath(p.currentPathEntity!);
-                  p.selectAsset(result);
+                if (result == null) {
+                  return;
                 }
+                final AssetPicker<AssetEntity, AssetPathEntity> picker =
+                    context.findAncestorWidgetOfExactType()!;
+                final DefaultAssetPickerProvider p =
+                    picker.builder.provider as DefaultAssetPickerProvider;
+                await p.currentPathEntity!.refreshPathProperties();
+                await p.switchPath(p.currentPathEntity!);
+                p.selectAsset(result);
               },
               child: const Center(
                 child: Icon(Icons.camera_enhance, size: 42.0),
@@ -180,10 +183,7 @@ class PickMethod {
       icon: '⏳',
       name: 'Custom filter options',
       description: 'Add filter options for the picker.',
-      method: (
-        BuildContext context,
-        List<AssetEntity> assets,
-      ) {
+      method: (BuildContext context, List<AssetEntity> assets) {
         return AssetPicker.pickAssets(
           context,
           maxAssets: maxAssetsCount,
@@ -208,11 +208,8 @@ class PickMethod {
       icon: '➕',
       name: 'Prepend special item',
       description: 'A special item will prepend to the assets grid.',
-      method: (
-        BuildContext context,
-        List<AssetEntity> assets,
-      ) async {
-        return await AssetPicker.pickAssets(
+      method: (BuildContext context, List<AssetEntity> assets) {
+        return AssetPicker.pickAssets(
           context,
           maxAssets: maxAssetsCount,
           selectedAssets: assets,
@@ -233,11 +230,8 @@ class PickMethod {
       icon: '👁️‍🗨️',
       name: 'No preview',
       description: 'Pick assets like the WhatsApp/MegaTok pattern.',
-      method: (
-        BuildContext context,
-        List<AssetEntity> assets,
-      ) async {
-        return await AssetPicker.pickAssets(
+      method: (BuildContext context, List<AssetEntity> assets) {
+        return AssetPicker.pickAssets(
           context,
           maxAssets: maxAssetsCount,
           selectedAssets: assets,
@@ -248,11 +242,79 @@ class PickMethod {
     );
   }
 
+  factory PickMethod.keepScrollOffset({
+    required DefaultAssetPickerProvider Function() provider,
+    required DefaultAssetPickerBuilderDelegate Function() delegate,
+    required Function(PermissionState state) onPermission,
+    GestureLongPressCallback? onLongPress,
+  }) {
+    return PickMethod(
+      icon: '💾',
+      name: 'Keep scroll offset',
+      description: 'Pick assets from same scroll position.',
+      method: (BuildContext context, List<AssetEntity> assets) async {
+        final PermissionState _ps =
+            await PhotoManager.requestPermissionExtend();
+        if (_ps != PermissionState.authorized &&
+            _ps != PermissionState.limited) {
+          throw StateError('Permission state error with $_ps.');
+        }
+        onPermission(_ps);
+        return AssetPicker.pickAssetsWithDelegate(
+          context,
+          provider: provider(),
+          delegate: delegate(),
+        );
+      },
+      onLongPress: onLongPress,
+    );
+  }
+
+  factory PickMethod.changeLanguages(int maxAssetsCount) {
+    return PickMethod(
+      icon: '🔤',
+      name: 'Change Languages',
+      description: 'Pass text delegates to change between languages. '
+          '(e.g. EnglishTextDelegate)',
+      method: (BuildContext context, List<AssetEntity> assets) {
+        return AssetPicker.pickAssets(
+          context,
+          maxAssets: maxAssetsCount,
+          selectedAssets: assets,
+          textDelegate: EnglishTextDelegate(),
+        );
+      },
+    );
+  }
+
+  factory PickMethod.preventGIFPicked(int maxAssetsCount) {
+    return PickMethod(
+      icon: '🈲',
+      name: 'Prevent GIF being picked',
+      description: 'Use selectPredicate to banned GIF picking when tapped.',
+      method: (BuildContext context, List<AssetEntity> assets) {
+        return AssetPicker.pickAssets(
+          context,
+          maxAssets: maxAssetsCount,
+          selectedAssets: assets,
+          selectPredicate: (BuildContext c, AssetEntity a, bool isSelected) {
+            print('Asset title: ${a.title}');
+            return a.title?.endsWith('.gif') != true;
+          },
+        );
+      },
+    );
+  }
+
   final String icon;
   final String name;
   final String description;
+
+  /// The core function that defines how to use the picker.
   final Future<List<AssetEntity>?> Function(
     BuildContext context,
     List<AssetEntity> selectedAssets,
   ) method;
+
+  final GestureLongPressCallback? onLongPress;
 }

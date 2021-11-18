@@ -49,21 +49,13 @@ class _DirectoryFileAssetPickerState extends State<DirectoryFileAssetPicker>
     final FileAssetPickerProvider provider = FileAssetPickerProvider(
       selectedAssets: fileList,
     );
-    final Widget picker = ChangeNotifierProvider<FileAssetPickerProvider>.value(
-      value: provider,
-      child: AssetPicker<File, Directory>(
-        builder: FileAssetPickerBuilder(provider: provider),
-      ),
+    final FileAssetPickerBuilder builder = FileAssetPickerBuilder(
+      provider: provider,
     );
-    final List<File>? result = await Navigator.of(
+    final List<File>? result = await AssetPicker.pickAssetsWithDelegate(
       context,
-      rootNavigator: true,
-    ).push<List<File>>(
-      AssetPickerPageRoute<List<File>>(
-        builder: picker,
-        transitionCurve: Curves.easeIn,
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
+      delegate: builder,
+      provider: provider,
     );
     if (result != null) {
       fileList
@@ -477,7 +469,7 @@ class FileAssetPickerBuilder
   @override
   PreferredSizeWidget appBar(BuildContext context) {
     return AppBar(
-      backgroundColor: theme.appBarTheme.color,
+      backgroundColor: theme.appBarTheme.backgroundColor,
       centerTitle: isAppleOS,
       title: pathEntitySelector(context),
       leading: backButton(context),
@@ -790,7 +782,7 @@ class FileAssetPickerBuilder
         selector: (_, FileAssetPickerProvider p) => p.isAssetsEmpty,
         builder: (_, bool isAssetsEmpty, __) {
           if (isAssetsEmpty) {
-            return const Text('Nothing here.');
+            return Text(textDelegate.emptyList);
           } else {
             return Center(
               child: SizedBox.fromSize(
@@ -1206,53 +1198,17 @@ class FileAssetPickerViewerBuilderDelegate
           maxAssets: selectorProvider?.maxAssets,
         );
 
-  bool isDisplayingDetail = true;
-
-  late final AnimationController _doubleTapAnimationController;
-  late final Animation<double> _doubleTapCurveAnimation;
-  Animation<double>? _doubleTapAnimation;
-  late VoidCallback _doubleTapListener;
-
-  late final PageController pageController;
+  bool _isDisplayingDetail = true;
 
   AssetsPickerTextDelegate get textDelegate => AssetsPickerTextDelegate();
 
+  @override
   void switchDisplayingDetail({bool? value}) {
-    isDisplayingDetail = value ?? !isDisplayingDetail;
+    _isDisplayingDetail = value ?? !_isDisplayingDetail;
     if (viewerState.mounted) {
       // ignore: invalid_use_of_protected_member
       viewerState.setState(() {});
     }
-  }
-
-  void updateAnimation(ExtendedImageGestureState state) {
-    final double begin = state.gestureDetails!.totalScale!;
-    final double end = state.gestureDetails!.totalScale! == 1.0 ? 3.0 : 1.0;
-    final Offset pointerDownPosition = state.pointerDownPosition!;
-
-    _doubleTapAnimation?.removeListener(_doubleTapListener);
-    _doubleTapAnimationController
-      ..stop()
-      ..reset();
-    _doubleTapListener = () {
-      state.handleDoubleTap(
-        scale: _doubleTapAnimation!.value,
-        doubleTapPosition: pointerDownPosition,
-      );
-    };
-    _doubleTapAnimation = Tween<double>(
-      begin: begin,
-      end: end,
-    ).animate(_doubleTapCurveAnimation)
-      ..addListener(_doubleTapListener);
-    _doubleTapAnimationController.forward();
-  }
-
-  Future<bool> syncSelectedAssetsWhenPop() async {
-    if (provider?.currentlySelectedAssets != null) {
-      selectorProvider?.selectedAssets = provider!.currentlySelectedAssets;
-    }
-    return true;
   }
 
   @override
@@ -1289,7 +1245,7 @@ class FileAssetPickerViewerBuilderDelegate
     return AnimatedPositioned(
       duration: kThemeAnimationDuration,
       curve: Curves.easeInOut,
-      bottom: isDisplayingDetail
+      bottom: _isDisplayingDetail
           ? 0.0
           : -(Screens.bottomSafeHeight + bottomDetailHeight),
       left: 0.0,
@@ -1403,7 +1359,8 @@ class FileAssetPickerViewerBuilderDelegate
     return AnimatedPositioned(
       duration: kThemeAnimationDuration,
       curve: Curves.easeInOut,
-      top: isDisplayingDetail ? 0.0 : -(Screens.topSafeHeight + kToolbarHeight),
+      top:
+          _isDisplayingDetail ? 0.0 : -(Screens.topSafeHeight + kToolbarHeight),
       left: 0.0,
       right: 0.0,
       height: Screens.topSafeHeight + kToolbarHeight,
@@ -1529,29 +1486,6 @@ class FileAssetPickerViewerBuilderDelegate
   }
 
   @override
-  void initStateAndTicker(
-    AssetPickerViewerState<File, Directory> s,
-    TickerProvider v,
-  ) {
-    super.initStateAndTicker(s, v);
-    _doubleTapAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: v,
-    );
-    _doubleTapCurveAnimation = CurvedAnimation(
-      parent: _doubleTapAnimationController,
-      curve: Curves.easeInOut,
-    );
-    pageController = PageController(initialPage: currentIndex);
-  }
-
-  @override
-  void dispose() {
-    _doubleTapAnimationController.dispose();
-    pageStreamController.close();
-  }
-
-  @override
   Widget selectButton(BuildContext context) {
     return Row(
       children: <Widget>[
@@ -1610,7 +1544,7 @@ class FileAssetPickerViewerBuilderDelegate
             border: !isSelected
                 ? Border.all(color: themeData.iconTheme.color!)
                 : null,
-            color: isSelected ? themeData.buttonColor : null,
+            color: isSelected ? themeData.colorScheme.secondary : null,
             shape: BoxShape.circle,
           ),
           child: Center(

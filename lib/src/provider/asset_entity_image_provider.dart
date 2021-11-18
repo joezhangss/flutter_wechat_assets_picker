@@ -6,8 +6,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../constants/constants.dart';
 
@@ -97,7 +97,7 @@ class AssetEntityImageProvider extends ImageProvider<AssetEntityImageProvider> {
       );
     }
     if (data == null) {
-      throw AssertionError('Null in entity\'s data.');
+      throw AssertionError('Null data in entity: $entity');
     }
     return decode(data);
   }
@@ -107,7 +107,7 @@ class AssetEntityImageProvider extends ImageProvider<AssetEntityImageProvider> {
       return ThumbOption.ios(
         width: width,
         height: height,
-        deliveryMode: DeliveryMode.fastFormat,
+        deliveryMode: DeliveryMode.opportunistic,
       );
     }
     return ThumbOption(width: width, height: height);

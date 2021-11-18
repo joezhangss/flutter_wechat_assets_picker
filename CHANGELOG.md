@@ -1,23 +1,83 @@
 # Changelog
-All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## 6.2.3
 
-## 6.0.0-dev.1
+- Pass through `selectPredicate` to `AssetPickerViewer`. (#211)
+- Bump sdk constraints (since 6.2.1).
 
-Sync everything from WeChat 8.x .
+## 6.2.2
+
+- Use `.contentUri` for video preview only on Android.
+
+## 6.2.1
+
+- Migrate to `extended_image` 5.x.
+- Use `.contentUri` constructor for `VideoPlayerController`.
+
+## 6.2.0
+
+- Introduce `shouldRevertGrid` to determine whether the assets grid should revert.
+  It's set with Apple OS accordingly before.
+- Upgrade `photo_manager` to resolve issues against `AssetEntity`s comparison.
+
+## 6.1.2
+
+- Fix limited resources refresh issue.
+- Update callers to avoid deprecated usage.
+
+## 6.1.1
+
+- Handle iCloud video more gracefully.
+
+## 6.1.0
+
+- Introduce `selectPredicate` to predicate asset when picking.
+
+## 6.0.6
+
+- Use the correct index reference with `selectedBackdrop`. (#195)
+
+## 6.0.5
+
+- Upgrade dependencies.
+
+## 6.0.4
+
+- Add French language text delegate. (Thanks to @didiosn)
+- Export "Nothing here." as a field to text delegate. (#190)
+- Fix selected backdrop not synced all the time.
+- Improve the instructions for the example.
+
+## 6.0.3
+
+- Fix path entity nullable issues with the asset grid.
+- Fix assets displaying condition missing with the iOS layout.
+
+## 6.0.2
+
+- Expose `shouldReversePreview` for `AssetPickerViewerBuilderDelegate`,
+  which provides a more precise control for the viewer.
+
+## 6.0.1
+
+- Improve total count calculation with `AssetPathEntity`. (#187)
+- Obtain `AssetPathEntity.isAll` fix from `photo_manager`.
+- Documents update.
+
+## 6.0.0
 
 ### New features
-
+- Sync all UI details from WeChat 8.x.
+- Integrate iCloud progress overview in previews.
 - Change the permission from the app settings when it's limited.
 - Request more assets on iOS when the permission is limited.
-- Fit the assets' grid's layout as the iOS `Photos` app (reverted and start from the bottom).
+- Fit the assets' grid's layout as the iOS `Photos` app (reverted and started from the bottom).
 - Add Arabic language text delegate.
 - Allow using `AssetPicker` and `AssetPickerViewer` directly with delegates.
+- Add `keepScrollOffset` feature for the `AssetPickerBuilderDelegate`,
+  which allow users to keep the scroll offset between pickings.
 
 ### Improvements
-
 - Items that being banned from select (reached max assets or type conflict)
   will have a stronger color cover to indicate.
 - Video preview in the [SpecialPickerType.wechatMoment] is completely different from other previews.
@@ -25,11 +85,16 @@ Sync everything from WeChat 8.x .
 - Better interaction when jumping between previewing assets.
 - Path entities list layout structure performance & structure improved.
 - More precise thumbnail's option for iOS.
+- Improve text scale handling. (#177)
+- Reduce font size for couple texts.
 
 ### Breaking changes
-
 Multiple refactoring happened with delegates,
 see [Migration Guide](guides/migration_guide.md) for more details.
+
+## 5.5.8
+
+- Fix the viewer's select button issue with WeChat Moment on Android.
 
 ## 5.5.7
 
@@ -133,7 +198,7 @@ see [Migration Guide](guides/migration_guide.md) for more details.
 - Reset to the top for the asset grid view after switching path.
 - Add ability to select assets in any position of the picker.
 - Implement mime type for image type judgement.
-- Fix disappeared GIF's indicator.
+- Fix disappeared GIFs indicator.
 
 ## 5.0.5
 
@@ -252,7 +317,7 @@ see [Migration Guide](guides/migration_guide.md) for more details.
 
 ## 2.2.0
 
-- Brand new example.
+- A brand new example.
 - Add `SortPathDelegate`.
 - Using zoom page transition for viewer.
 - Slightly add padding to viewer's assets list view.
@@ -283,7 +348,7 @@ see [Migration Guide](guides/migration_guide.md) for more details.
 - Support audio assets.
 - Support single asset mode.
 - Enlarge preview button's detector area size.
-- Fix wrong properties usage causing infinite build when the page reaches the end.
+- Fix wrong properties' usage causing infinite build when the page reaches the end.
 
 ### Breaking changes
 
