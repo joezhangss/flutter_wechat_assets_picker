@@ -347,7 +347,7 @@ class DefaultAssetPickerViewerBuilderDelegate
     List<AssetEntity>? selectedAssets,
     this.previewThumbSize,
     this.specialPickerType,
-    required this.downLoad,
+    this.downLoad,
     int? maxAssets,
     bool shouldReversePreview = false,
     AssetSelectPredicate<AssetEntity>? selectPredicate,
@@ -386,7 +386,7 @@ class DefaultAssetPickerViewerBuilderDelegate
           (selectedAssets?.any((AssetEntity e) => e.type == AssetType.video) ??
               false);
 
-  final ValueChanged<String> downLoad;
+  final ValueChanged<String>? downLoad;
 
   @override
   Widget assetPageBuilder(BuildContext context, int index) {
@@ -712,7 +712,7 @@ class DefaultAssetPickerViewerBuilderDelegate
 
   /// AppBar widget.
   /// 顶栏部件
-  Widget appBar(BuildContext context,ValueChanged<String> downLoad) {
+  Widget appBar(BuildContext context,ValueChanged<String>? downLoad) {
 
 
     return ValueListenableBuilder<bool>(
@@ -746,7 +746,7 @@ class DefaultAssetPickerViewerBuilderDelegate
                     child: confirmButton(context),
                   ),
                 //===============lxy==0324====下载标====start====
-                IconButton(
+                if(downLoad!=null)IconButton(
                   icon: const   Icon(Icons.file_download),
                   onPressed: () {
                     // downLoad(currentIndex);
@@ -754,7 +754,7 @@ class DefaultAssetPickerViewerBuilderDelegate
                       downLoad(previewAssets[currentIndex].relativePath!);
                     }else{
                       //表示本地文件
-                      downLoad("");
+                      downLoad('');
                     }
 
                     // print(previewAssets[currentIndex].relativePath);
@@ -988,7 +988,11 @@ class DefaultAssetPickerViewerBuilderDelegate
                   ),
                 ] else ...<Widget>[
                   //===============lxy==0324====下载图标回调功能====start====
-                  appBar(context,(e)=>downLoad(e)),
+                  appBar(context,(e){
+                    if(downLoad!=null){
+                      downLoad!(e);
+                    }
+                  }),
                   //===============lxy==0324====下载标====start====
                   if (selectedAssets != null ||
                       (isWeChatMoment && hasVideo && isAppleOS))
