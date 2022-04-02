@@ -55,7 +55,7 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
         shouldReversePreview: shouldReversePreview,
         selectPredicate: selectPredicate,
         //===============lxy==0324========start====
-        downLoad:(e){
+        downLoad:downLoads==null?null:(e){
           if(downLoads != null){
             downLoads(e);
           }

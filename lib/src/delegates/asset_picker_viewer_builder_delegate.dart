@@ -714,7 +714,7 @@ class DefaultAssetPickerViewerBuilderDelegate
   /// 顶栏部件
   Widget appBar(BuildContext context,ValueChanged<String>? downLoad) {
 
-
+    print("downLoad==$downLoad");
     return ValueListenableBuilder<bool>(
       valueListenable: isDisplayingDetail,
       builder: (_, bool value, Widget? child) => AnimatedPositionedDirectional(
@@ -988,11 +988,7 @@ class DefaultAssetPickerViewerBuilderDelegate
                   ),
                 ] else ...<Widget>[
                   //===============lxy==0324====下载图标回调功能====start====
-                  appBar(context,(e){
-                    if(downLoad!=null){
-                      downLoad!(e);
-                    }
-                  }),
+                  appBar(context,downLoad),
                   //===============lxy==0324====下载标====start====
                   if (selectedAssets != null ||
                       (isWeChatMoment && hasVideo && isAppleOS))
