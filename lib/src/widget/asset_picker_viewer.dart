@@ -23,18 +23,21 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
   /// Static method to push with the navigator.
   /// 跳转至选择预览的静态方法
   static Future<List<AssetEntity>?> pushToViewer(
-    BuildContext context, {
-    int currentIndex = 0,
-    required List<AssetEntity> previewAssets,
-    required ThemeData themeData,
-    DefaultAssetPickerProvider? selectorProvider,
-    List<int>? previewThumbSize,
-    List<AssetEntity>? selectedAssets,
-    SpecialPickerType? specialPickerType,
-    int? maxAssets,
-    bool shouldReversePreview = false,
-    AssetSelectPredicate<AssetEntity>? selectPredicate,
-  }) async {
+      BuildContext context, {
+        int currentIndex = 0,
+        required List<AssetEntity> previewAssets,
+        required ThemeData themeData,
+        DefaultAssetPickerProvider? selectorProvider,
+        List<int>? previewThumbSize,
+        List<AssetEntity>? selectedAssets,
+        SpecialPickerType? specialPickerType,
+        int? maxAssets,
+        bool shouldReversePreview = false,
+        AssetSelectPredicate<AssetEntity>? selectPredicate,
+        //===============lxy==0324========start====
+        required ValueChanged<String> downLoads,
+        //===============lxy==0324========end====
+      }) async {
     await AssetPicker.permissionCheck();
     final Widget viewer = AssetPickerViewer<AssetEntity, AssetPathEntity>(
       builder: DefaultAssetPickerViewerBuilderDelegate(
@@ -51,26 +54,29 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
         maxAssets: maxAssets,
         shouldReversePreview: shouldReversePreview,
         selectPredicate: selectPredicate,
+        //===============lxy==0324========start====
+        downLoad:(e)=>downLoads(e),
+        //===============lxy==0324========end====
       ),
     );
     final PageRouteBuilder<List<AssetEntity>> pageRoute =
-        PageRouteBuilder<List<AssetEntity>>(
+    PageRouteBuilder<List<AssetEntity>>(
       pageBuilder: (_, __, ___) => viewer,
       transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
         return FadeTransition(opacity: animation, child: child);
       },
     );
     final List<AssetEntity>? result =
-        await Navigator.of(context).push<List<AssetEntity>>(pageRoute);
+    await Navigator.of(context).push<List<AssetEntity>>(pageRoute);
     return result;
   }
 
   /// Call the viewer with provided delegate and provider.
   /// 通过指定的 [delegate] 调用查看器
   static Future<List<A>?> pushToViewerWithDelegate<A, P>(
-    BuildContext context, {
-    required AssetPickerViewerBuilderDelegate<A, P> delegate,
-  }) async {
+      BuildContext context, {
+        required AssetPickerViewerBuilderDelegate<A, P> delegate,
+      }) async {
     await AssetPicker.permissionCheck();
     final Widget viewer = AssetPickerViewer<A, P>(builder: delegate);
     final PageRouteBuilder<List<A>> pageRoute = PageRouteBuilder<List<A>>(

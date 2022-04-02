@@ -27,6 +27,7 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
     this.maxAssets,
     this.shouldReversePreview = false,
     this.selectPredicate,
+
   });
 
   /// [ChangeNotifier] for photo selector viewer.
@@ -68,7 +69,7 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
   /// 使用 [StreamController] 的主要目的是缩小页码变化时构建组件的范围，
   /// 防止滥用 [setState] 导致其他部件重新构建。
   final StreamController<int> pageStreamController =
-      StreamController<int>.broadcast();
+  StreamController<int>.broadcast();
 
   /// The [ScrollController] for the previewing assets list.
   /// 正在预览的资源的 [ScrollController]
@@ -142,9 +143,9 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
   /// Call when viewer is calling [initState].
   /// 当预览器调用 [initState] 时注册 [State] 和 [TickerProvider]。
   void initStateAndTicker(
-    AssetPickerViewerState<Asset, Path> s,
-    TickerProvider v,
-  ) {
+      AssetPickerViewerState<Asset, Path> s,
+      TickerProvider v,
+      ) {
     viewerState = s;
     vsync = v;
     doubleTapAnimationController = AnimationController(
@@ -209,7 +210,9 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
   /// whether if a new asset is selected or unselected.
   /// 构造一个通知器，在新资源选中或取消选中时通知。
   late final ValueNotifier<int> selectedNotifier =
-      ValueNotifier<int>(selectedCount);
+  ValueNotifier<int>(selectedCount);
+
+
 
   void unSelectAsset(Asset entity) {
     provider?.unSelectAssetEntity(entity);
@@ -235,10 +238,10 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
   }
 
   Future<void> onChangingSelected(
-    BuildContext context,
-    Asset asset,
-    bool isSelected,
-  ) async {
+      BuildContext context,
+      Asset asset,
+      bool isSelected,
+      ) async {
     final bool? selectPredicateResult = await selectPredicate?.call(
       context,
       asset,
@@ -276,10 +279,10 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
   /// Common image load state changed callback with [Widget].
   /// 图片加载状态的部件回调
   Widget previewWidgetLoadStateChanged(
-    BuildContext context,
-    ExtendedImageState state, {
-    bool hasLoaded = false,
-  }) {
+      BuildContext context,
+      ExtendedImageState state, {
+        bool hasLoaded = false,
+      }) {
     Widget loader;
     switch (state.extendedImageLoadState) {
       case LoadState.completed:
@@ -329,6 +332,8 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
   /// Yes, the build method.
   /// 没错，是它是它就是它，我们亲爱的 build 方法~
   Widget build(BuildContext context);
+
+
 }
 
 class DefaultAssetPickerViewerBuilderDelegate
@@ -342,20 +347,21 @@ class DefaultAssetPickerViewerBuilderDelegate
     List<AssetEntity>? selectedAssets,
     this.previewThumbSize,
     this.specialPickerType,
+    required this.downLoad,
     int? maxAssets,
     bool shouldReversePreview = false,
     AssetSelectPredicate<AssetEntity>? selectPredicate,
   }) : super(
-          currentIndex: currentIndex,
-          previewAssets: previewAssets,
-          provider: provider,
-          themeData: themeData,
-          selectedAssets: selectedAssets,
-          selectorProvider: selectorProvider,
-          maxAssets: maxAssets,
-          shouldReversePreview: shouldReversePreview,
-          selectPredicate: selectPredicate,
-        );
+    currentIndex: currentIndex,
+    previewAssets: previewAssets,
+    provider: provider,
+    themeData: themeData,
+    selectedAssets: selectedAssets,
+    selectorProvider: selectorProvider,
+    maxAssets: maxAssets,
+    shouldReversePreview: shouldReversePreview,
+    selectPredicate: selectPredicate,
+  );
 
   /// Thumb size for the preview of images in the viewer.
   /// 预览时图片的缩略图大小
@@ -377,8 +383,10 @@ class DefaultAssetPickerViewerBuilderDelegate
   /// 当前正在预览或已选的资源是否有视频
   bool get hasVideo =>
       previewAssets.any((AssetEntity e) => e.type == AssetType.video) ||
-      (selectedAssets?.any((AssetEntity e) => e.type == AssetType.video) ??
-          false);
+          (selectedAssets?.any((AssetEntity e) => e.type == AssetType.video) ??
+              false);
+
+  final ValueChanged<String> downLoad;
 
   @override
   Widget assetPageBuilder(BuildContext context, int index) {
@@ -389,6 +397,7 @@ class DefaultAssetPickerViewerBuilderDelegate
         _builder = AudioPageBuilder(asset: asset);
         break;
       case AssetType.image:
+        var item = asset.relativePath!;
         _builder = ImagePageBuilder(
           asset: asset,
           delegate: this,
@@ -403,10 +412,10 @@ class DefaultAssetPickerViewerBuilderDelegate
         );
         break;
       case AssetType.other:
-        //zq modify start -- 2021.11.10适配网络图片或视频的显示
-        // _builder = Center(
-        //   child: ScaleText(Constants.textDelegate.unSupportedAssetType),
-        // );
+      //zq modify start -- 2021.11.10适配网络图片或视频的显示
+      // _builder = Center(
+      //   child: ScaleText(Constants.textDelegate.unSupportedAssetType),
+      // );
         if(asset.relativePath != null && asset.relativePath != '')
         {
           final List<String> nameList = asset.relativePath!.split('.');
@@ -415,14 +424,35 @@ class DefaultAssetPickerViewerBuilderDelegate
           // print("加载视频。。。fileType==${fileType}");
           if(fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp')
           {
-            // print("加载视频。。。");
+            // print("加载视频。。。${asset.relativePath}");
             //视频格式
             _builder = VideoNetworkPageBuilder(url: asset.relativePath!,);
           }
           else if(fileType.toLowerCase() == 'png' || fileType.toLowerCase() == 'jpg' || fileType.toLowerCase() == 'jpeg' || fileType.toLowerCase() == 'bmp')
           {
-            // print("加载图片。。。fileType==${fileType}");
-            _builder = Image.network(asset.relativePath!);//支持网络图片
+            // print("加载图片。。。fileType==${fileType}===${asset}===${asset.relativePath!}");
+            // _builder = Image.network(asset.relativePath!);
+            //支持网络图片
+            /*lxy  20220321 支持图片手势放大缩小======= start*/
+            var item = asset.relativePath!;
+            _builder = ExtendedImage.network( item,
+              fit: BoxFit.contain,
+              mode: ExtendedImageMode.gesture,
+              initGestureConfigHandler: (state) {
+                return GestureConfig(
+                  minScale: 0.9,
+                  animationMinScale: 0.7,
+                  maxScale: 3.0,
+                  animationMaxScale: 3.5,
+                  speed: 1.0,
+                  inertialSpeed: 100.0,
+                  initialScale: 1.0,
+                  inPageView: false,
+                  initialAlignment: InitialAlignment.center,
+                );
+              },
+            );
+            /*lxy  20220321 支持图片手势放大缩小======= end*/
           }
           else
           {
@@ -522,7 +552,7 @@ class DefaultAssetPickerViewerBuilderDelegate
         child: child!,
       ),
       child:
-          ChangeNotifierProvider<AssetPickerViewerProvider<AssetEntity>?>.value(
+      ChangeNotifierProvider<AssetPickerViewerProvider<AssetEntity>?>.value(
         value: provider,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -627,13 +657,13 @@ class DefaultAssetPickerViewerBuilderDelegate
               child: Selector<AssetPickerViewerProvider<AssetEntity>?,
                   List<AssetEntity>?>(
                 selector: (_, AssetPickerViewerProvider<AssetEntity>? p) =>
-                    p?.currentlySelectedAssets,
+                p?.currentlySelectedAssets,
                 child: _item,
                 builder: (
-                  _,
-                  List<AssetEntity>? currentlySelectedAssets,
-                  Widget? w,
-                ) {
+                    _,
+                    List<AssetEntity>? currentlySelectedAssets,
+                    Widget? w,
+                    ) {
                   final bool isSelected =
                       currentlySelectedAssets?.contains(asset) ?? false;
                   return Stack(
@@ -645,9 +675,9 @@ class DefaultAssetPickerViewerBuilderDelegate
                         decoration: BoxDecoration(
                           border: isViewing
                               ? Border.all(
-                                  color: themeData.colorScheme.secondary,
-                                  width: 3,
-                                )
+                            color: themeData.colorScheme.secondary,
+                            width: 3,
+                          )
                               : null,
                           color: isSelected
                               ? null
@@ -664,10 +694,27 @@ class DefaultAssetPickerViewerBuilderDelegate
       ),
     );
   }
+  //===============lxy==0324========start====
+  /// 判断是否为视频、图片、网络
+  bool isNetworkFile(){
+    // bool isImgOrVideo(){
+    // bool type = false;
+    ///这步是：只显示图片的下载 不显示视频以及本地图片的下载
+    // if(previewAssets[currentIndex].relativePath?.contains('http')??false) {
+    // if(previewAssets[currentIndex].relativePath?.contains('mp4')??false) return type = false;
+    // else return type = true;
+    // }
+    // return type;
+
+    return (previewAssets[currentIndex].relativePath?.contains('http')??false);
+  }
+  //===============lxy==0324========end====
 
   /// AppBar widget.
   /// 顶栏部件
-  Widget appBar(BuildContext context) {
+  Widget appBar(BuildContext context,ValueChanged<String> downLoad) {
+
+
     return ValueListenableBuilder<bool>(
       valueListenable: isDisplayingDetail,
       builder: (_, bool value, Widget? child) => AnimatedPositionedDirectional(
@@ -698,6 +745,22 @@ class DefaultAssetPickerViewerBuilderDelegate
                     padding: const EdgeInsetsDirectional.only(end: 14),
                     child: confirmButton(context),
                   ),
+                //===============lxy==0324====下载标====start====
+                IconButton(
+                  icon: const   Icon(Icons.file_download),
+                  onPressed: () {
+                    // downLoad(currentIndex);
+                    if(isNetworkFile()){
+                      downLoad(previewAssets[currentIndex].relativePath!);
+                    }else{
+                      //表示本地文件
+                      downLoad("");
+                    }
+
+                    // print(previewAssets[currentIndex].relativePath);
+                  },
+                ),
+                //===============lxy==0324====下载标====end====
               ],
             ),
             if (!isAppleOS && specialPickerType == null)
@@ -732,9 +795,9 @@ class DefaultAssetPickerViewerBuilderDelegate
       child: Consumer<AssetPickerViewerProvider<AssetEntity>?>(
         builder: (_, AssetPickerViewerProvider<AssetEntity>? provider, __) {
           assert(
-            isWeChatMoment || provider != null,
-            'Viewer provider must not be null'
-            'when the special type is not WeChat moment.',
+          isWeChatMoment || provider != null,
+          'Viewer provider must not be null'
+              'when the special type is not WeChat moment.',
           );
           return MaterialButton(
             minWidth: () {
@@ -750,7 +813,7 @@ class DefaultAssetPickerViewerBuilderDelegate
               borderRadius: BorderRadius.circular(3.0),
             ),
             child: ScaleText(
-              () {
+                  () {
                 if (isWeChatMoment && hasVideo) {
                   return Constants.textDelegate.confirm;
                 }
@@ -792,10 +855,10 @@ class DefaultAssetPickerViewerBuilderDelegate
   /// Select button for apple OS.
   /// 苹果系列系统的选择按钮
   Widget _appleOSSelectButton(
-    BuildContext context,
-    bool isSelected,
-    AssetEntity asset,
-  ) {
+      BuildContext context,
+      bool isSelected,
+      AssetEntity asset,
+      ) {
     if (!isSelected && selectedMaximumAssets) {
       return const SizedBox.shrink();
     }
@@ -823,10 +886,10 @@ class DefaultAssetPickerViewerBuilderDelegate
   /// Select button for Android.
   /// 安卓系统的选择按钮
   Widget _androidSelectButton(
-    BuildContext context,
-    bool isSelected,
-    AssetEntity asset,
-  ) {
+      BuildContext context,
+      bool isSelected,
+      AssetEntity asset,
+      ) {
     return CustomCheckbox(
       value: isSelected,
       shape: RoundedRectangleBorder(
@@ -851,15 +914,15 @@ class DefaultAssetPickerViewerBuilderDelegate
               child: Selector<AssetPickerViewerProvider<AssetEntity>,
                   List<AssetEntity>>(
                 selector: (
-                  _,
-                  AssetPickerViewerProvider<AssetEntity> p,
-                ) =>
-                    p.currentlySelectedAssets,
+                    _,
+                    AssetPickerViewerProvider<AssetEntity> p,
+                    ) =>
+                p.currentlySelectedAssets,
                 builder: (
-                  BuildContext c,
-                  List<AssetEntity> currentlySelectedAssets,
-                  __,
-                ) {
+                    BuildContext c,
+                    List<AssetEntity> currentlySelectedAssets,
+                    __,
+                    ) {
                   final AssetEntity asset = previewAssets.elementAt(
                     snapshot.data!,
                   );
@@ -901,6 +964,7 @@ class DefaultAssetPickerViewerBuilderDelegate
               children: <Widget>[
                 Positioned.fill(
                   child: ExtendedImageGesturePageView.builder(
+
                     physics: previewAssets.length == 1
                         ? const CustomClampingScrollPhysics()
                         : const CustomBouncingScrollPhysics(),
@@ -923,7 +987,9 @@ class DefaultAssetPickerViewerBuilderDelegate
                     child: confirmButton(context),
                   ),
                 ] else ...<Widget>[
-                  appBar(context),
+                  //===============lxy==0324====下载图标回调功能====start====
+                  appBar(context,(e)=>downLoad(e)),
+                  //===============lxy==0324====下载标====start====
                   if (selectedAssets != null ||
                       (isWeChatMoment && hasVideo && isAppleOS))
                     bottomDetailBuilder(context),
