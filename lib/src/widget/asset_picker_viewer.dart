@@ -35,7 +35,7 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
         bool shouldReversePreview = false,
         AssetSelectPredicate<AssetEntity>? selectPredicate,
         //===============lxy==0324========start====
-        required ValueChanged<String> downLoads,
+        ValueChanged<String>? downLoads,
         //===============lxy==0324========end====
       }) async {
     await AssetPicker.permissionCheck();
@@ -55,7 +55,11 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
         shouldReversePreview: shouldReversePreview,
         selectPredicate: selectPredicate,
         //===============lxy==0324========start====
-        downLoad:(e)=>downLoads(e),
+        downLoad:(e){
+          if(downLoads != null){
+            downLoads(e);
+          }
+        },
         //===============lxy==0324========end====
       ),
     );
