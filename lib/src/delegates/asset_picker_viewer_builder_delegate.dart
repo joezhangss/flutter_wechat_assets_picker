@@ -422,7 +422,7 @@ class DefaultAssetPickerViewerBuilderDelegate
           // print("加载视频。。。nameList==${nameList}");
           final String fileType = nameList[nameList.length-1];
           // print("加载视频。。。fileType==${fileType}");
-          if(fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp')
+          if(fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov')
           {
             // print("加载视频。。。${asset.relativePath}");
             //视频格式
