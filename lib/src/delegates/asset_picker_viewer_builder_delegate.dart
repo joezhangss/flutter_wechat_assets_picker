@@ -759,6 +759,8 @@ class DefaultAssetPickerViewerBuilderDelegate
                     // downLoad(currentIndex);
                     if(isNetworkFile()){
                       downLoad(previewAssets[currentIndex].relativePath!);
+                    }else{
+                      downLoad('');
                     }
 
                     // print(previewAssets[currentIndex].relativePath);
@@ -770,7 +772,11 @@ class DefaultAssetPickerViewerBuilderDelegate
                 if(switchVideoPlayer!=null && isNetworkFile() && ((fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov')))TextButton(
                   child: const Text('切换播放', style: TextStyle(fontSize: 15, color: Colors.white)),
                   onPressed: () {
-                    switchVideoPlayer(url);
+                    if(switchVideoPlayer!=null && isNetworkFile() && ((fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov'))){
+                      switchVideoPlayer(url);
+                    }else{
+                      switchVideoPlayer('');
+                    }
                   },
                 ),
                 // ===============zq==0412========end====
