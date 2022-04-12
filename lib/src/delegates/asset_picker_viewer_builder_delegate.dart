@@ -719,8 +719,6 @@ class DefaultAssetPickerViewerBuilderDelegate
   Widget appBar(BuildContext context,ValueChanged<String>? downLoad, ValueChanged<String>? switchVideoPlayer,) {
 
     // print("downLoad==$downLoad");
-    String url = previewAssets[currentIndex].relativePath!;
-    String fileType = url.split(".").last;
     
     return ValueListenableBuilder<bool>(
       valueListenable: isDisplayingDetail,
@@ -752,6 +750,21 @@ class DefaultAssetPickerViewerBuilderDelegate
                     padding: const EdgeInsetsDirectional.only(end: 14),
                     child: confirmButton(context),
                   ),
+                // ===============zq==0412========start====
+                //用户有使用switchVideoPlayer，并且是网络文件，并且是视频文件
+                if(switchVideoPlayer!=null)TextButton(
+                  child: const Text('切换播放', style: TextStyle(fontSize: 15, color: Colors.white)),
+                  onPressed: () {
+                    String url = previewAssets[currentIndex].relativePath!;
+                    String fileType = url.split(".").last;
+                    if(switchVideoPlayer!=null && isNetworkFile() && ((fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov'))){
+                      switchVideoPlayer(url);
+                    }else{
+                      switchVideoPlayer('');
+                    }
+                  },
+                ),
+                // ===============zq==0412========end====
                 //===============lxy==0324====下载标====start====
                 if(downLoad!=null)IconButton(
                   icon: const   Icon(Icons.file_download),
@@ -767,19 +780,7 @@ class DefaultAssetPickerViewerBuilderDelegate
                   },
                 ),
                 //===============lxy==0324====下载标====end====
-                // ===============zq==0412========start====
-                //用户有使用switchVideoPlayer，并且是网络文件，并且是视频文件
-                if(switchVideoPlayer!=null && isNetworkFile() && ((fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov')))TextButton(
-                  child: const Text('切换播放', style: TextStyle(fontSize: 15, color: Colors.white)),
-                  onPressed: () {
-                    if(switchVideoPlayer!=null && isNetworkFile() && ((fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov'))){
-                      switchVideoPlayer(url);
-                    }else{
-                      switchVideoPlayer('');
-                    }
-                  },
-                ),
-                // ===============zq==0412========end====
+               
               ],
             ),
             if (!isAppleOS && specialPickerType == null)
