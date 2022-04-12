@@ -348,6 +348,7 @@ class DefaultAssetPickerViewerBuilderDelegate
     this.previewThumbSize,
     this.specialPickerType,
     this.downLoad,
+    this.switchVideoPlayer,
     int? maxAssets,
     bool shouldReversePreview = false,
     AssetSelectPredicate<AssetEntity>? selectPredicate,
@@ -386,7 +387,10 @@ class DefaultAssetPickerViewerBuilderDelegate
           (selectedAssets?.any((AssetEntity e) => e.type == AssetType.video) ??
               false);
 
+  // ===============zq==0412========start====
   final ValueChanged<String>? downLoad;
+  final ValueChanged<String>? switchVideoPlayer;
+  // ===============zq==0412========end====
 
   @override
   Widget assetPageBuilder(BuildContext context, int index) {
@@ -712,9 +716,12 @@ class DefaultAssetPickerViewerBuilderDelegate
 
   /// AppBar widget.
   /// 顶栏部件
-  Widget appBar(BuildContext context,ValueChanged<String>? downLoad) {
+  Widget appBar(BuildContext context,ValueChanged<String>? downLoad, ValueChanged<String>? switchVideoPlayer,) {
 
-    print("downLoad==$downLoad");
+    // print("downLoad==$downLoad");
+    String url = previewAssets[currentIndex].relativePath!;
+    String fileType = url.split(".").last;
+    
     return ValueListenableBuilder<bool>(
       valueListenable: isDisplayingDetail,
       builder: (_, bool value, Widget? child) => AnimatedPositionedDirectional(
@@ -752,15 +759,21 @@ class DefaultAssetPickerViewerBuilderDelegate
                     // downLoad(currentIndex);
                     if(isNetworkFile()){
                       downLoad(previewAssets[currentIndex].relativePath!);
-                    }else{
-                      //表示本地文件
-                      downLoad('');
                     }
 
                     // print(previewAssets[currentIndex].relativePath);
                   },
                 ),
                 //===============lxy==0324====下载标====end====
+                // ===============zq==0412========start====
+                //用户有使用switchVideoPlayer，并且是网络文件，并且是视频文件
+                if(switchVideoPlayer!=null && isNetworkFile() && ((fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov')))TextButton(
+                  child: const Text('切换播放', style: TextStyle(fontSize: 15, color: Colors.white)),
+                  onPressed: () {
+                    switchVideoPlayer(url);
+                  },
+                ),
+                // ===============zq==0412========end====
               ],
             ),
             if (!isAppleOS && specialPickerType == null)
@@ -988,7 +1001,7 @@ class DefaultAssetPickerViewerBuilderDelegate
                   ),
                 ] else ...<Widget>[
                   //===============lxy==0324====下载图标回调功能====start====
-                  appBar(context,downLoad),
+                  appBar(context,downLoad, switchVideoPlayer),
                   //===============lxy==0324====下载标====start====
                   if (selectedAssets != null ||
                       (isWeChatMoment && hasVideo && isAppleOS))
