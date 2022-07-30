@@ -613,7 +613,7 @@ abstract class AssetPickerBuilderDelegate<Asset, Path> {
     // Schedule the scroll position's restoration callback if this feature
     // is enabled and offsets are different.
     if (keepScrollOffset && Constants.scrollPosition != null) {
-      SchedulerBinding.instance!.addPostFrameCallback((_) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         // Update only if the controller has clients.
         if (gridScrollController.hasClients) {
           gridScrollController.jumpTo(Constants.scrollPosition!.pixels);
