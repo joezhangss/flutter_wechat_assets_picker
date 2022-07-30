@@ -245,7 +245,7 @@ class AssetPickerState<Asset, Path> extends State<AssetPicker<Asset, Path>>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     AssetPicker.registerObserve(_onLimitedAssetsUpdated);
   }
 
@@ -261,7 +261,7 @@ class AssetPickerState<Asset, Path> extends State<AssetPicker<Asset, Path>>
 
   @override
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     AssetPicker.unregisterObserve(_onLimitedAssetsUpdated);
     // Skip delegate's dispose when it's keeping scroll offset.
     if (!widget.builder.keepScrollOffset) {
