@@ -1,20 +1,20 @@
-///
-/// [Author] Alex (https://github.com/AlexV525)
-/// [Date] 2021/5/11 11:37
-///
+// Copyright 2019 The FlutterCandies author. All rights reserved.
+// Use of this source code is governed by an Apache license that can be found
+// in the LICENSE file.
+
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_manager/photo_manager.dart';
 
-import '../../constants/constants.dart';
-import '../../provider/asset_entity_image_provider.dart';
+import '../../internal/singleton.dart';
 import '../../widget/scale_text.dart';
 
 class AssetEntityGridItemBuilder extends StatefulWidget {
   const AssetEntityGridItemBuilder({
-    Key? key,
+    super.key,
     required this.image,
     required this.failedItemBuilder,
-  }) : super(key: key);
+  });
 
   final AssetEntityImageProvider image;
   final WidgetBuilder failedItemBuilder;
@@ -25,13 +25,11 @@ class AssetEntityGridItemBuilder extends StatefulWidget {
 }
 
 class AssetEntityGridItemWidgetState extends State<AssetEntityGridItemBuilder> {
-  AssetEntityImageProvider get imageProvider => widget.image;
-
   Widget? child;
 
   Widget get newChild {
     return ExtendedImage(
-      image: imageProvider,
+      image: widget.image,
       fit: BoxFit.cover,
       loadStateChanged: (ExtendedImageState state) {
         Widget loader = const SizedBox.shrink();
@@ -51,20 +49,20 @@ class AssetEntityGridItemWidgetState extends State<AssetEntityGridItemBuilder> {
     );
   }
 
-  /// Item widgets when the thumb data load failed.
+  /// Item widgets when the thumbnail data load failed.
   /// 资源缩略数据加载失败时使用的部件
   Widget failedItemBuilder(BuildContext context) {
     return Center(
       child: ScaleText(
-        Constants.textDelegate.loadFailed,
+        Singleton.textDelegate.loadFailed,
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 18.0),
+        semanticsLabel: Singleton.textDelegate.semanticsTextDelegate.loadFailed,
       ),
     );
   }
 
   @override
-  @mustCallSuper
   Widget build(BuildContext context) {
     child ??= newChild;
     return child!;

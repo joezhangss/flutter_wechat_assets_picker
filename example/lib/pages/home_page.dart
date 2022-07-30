@@ -1,8 +1,9 @@
-///
-/// [Author] Alex (https://github.com/Alex525)
-/// [Date] 2020-05-31 21:38
-///
+// Copyright 2019 The FlutterCandies author. All rights reserved.
+// Use of this source code is governed by an Apache license that can be found
+// in the LICENSE file.
+
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 
 import '../constants/screens.dart';
@@ -15,10 +16,10 @@ bool get currentIsDark =>
     Screens.mediaQuery.platformBrightness == Brightness.dark;
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
@@ -71,16 +72,19 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text(
-                'WeChat Asset Picker',
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
+              Semantics(
+                sortKey: const OrdinalSortKey(0),
+                child: Text(
+                  'WeChat Asset Picker',
+                  style: Theme.of(context).textTheme.headline6,
                 ),
               ),
-              Text(
-                packageInfo == null ? 'Unknown version' : packageInfo!.version,
-                style: Theme.of(context).textTheme.caption,
+              Semantics(
+                sortKey: const OrdinalSortKey(0.1),
+                child: Text(
+                  'Version: ${packageVersion ?? 'unknown'}',
+                  style: Theme.of(context).textTheme.caption,
+                ),
               ),
             ],
           ),
@@ -104,7 +108,7 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: PageView(
                   controller: controller,
-                  children: <Widget>[
+                  children: const <Widget>[
                     MultiAssetsPage(),
                     SingleAssetPage(),
                     CustomPickersPage(),
@@ -120,18 +124,15 @@ class _HomePageState extends State<HomePage> {
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: Icon(Icons.photo_library),
-              // ignore: deprecated_member_use
-              title: Text('Multi'),
+              label: 'Multi',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.photo),
-              // ignore: deprecated_member_use
-              title: Text('Single'),
+              label: 'Single',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.explore),
-              // ignore: deprecated_member_use
-              title: Text('Custom'),
+              label: 'Custom',
             ),
           ],
         ),

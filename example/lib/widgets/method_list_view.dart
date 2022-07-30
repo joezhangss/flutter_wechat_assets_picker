@@ -1,25 +1,32 @@
-///
-/// [Author] Alex (https://github.com/AlexV525)
-/// [Date] 2021/7/13 11:00
-///
+// Copyright 2019 The FlutterCandies author. All rights reserved.
+// Use of this source code is governed by an Apache license that can be found
+// in the LICENSE file.
+
 import 'package:flutter/material.dart';
 
 import '../constants/picker_method.dart';
 
-class MethodListView extends StatelessWidget {
+class MethodListView extends StatefulWidget {
   const MethodListView({
-    Key? key,
+    super.key,
     required this.pickMethods,
     required this.onSelectMethod,
-  }) : super(key: key);
+  });
 
   final List<PickMethod> pickMethods;
-  final Function(PickMethod method) onSelectMethod;
+  final void Function(PickMethod method) onSelectMethod;
+
+  @override
+  State<MethodListView> createState() => _MethodListViewState();
+}
+
+class _MethodListViewState extends State<MethodListView> {
+  final ScrollController _controller = ScrollController();
 
   Widget methodItemBuilder(BuildContext context, int index) {
-    final PickMethod model = pickMethods[index];
+    final PickMethod model = widget.pickMethods[index];
     return InkWell(
-      onTap: () => onSelectMethod(model),
+      onTap: () => widget.onSelectMethod(model),
       onLongPress: model.onLongPress,
       child: Container(
         padding: const EdgeInsets.symmetric(
@@ -35,7 +42,7 @@ class MethodListView extends StatelessWidget {
               child: Center(
                 child: Text(
                   model.icon,
-                  style: const TextStyle(fontSize: 24.0),
+                  style: const TextStyle(fontSize: 28.0),
                 ),
               ),
             ),
@@ -76,11 +83,13 @@ class MethodListView extends StatelessWidget {
         horizontal: 10,
       ).copyWith(bottom: 10.0),
       child: Scrollbar(
-        isAlwaysShown: true,
+        controller: _controller,
+        thumbVisibility: true,
         radius: const Radius.circular(999),
         child: ListView.builder(
+          controller: _controller,
           padding: const EdgeInsets.symmetric(vertical: 10.0),
-          itemCount: pickMethods.length,
+          itemCount: widget.pickMethods.length,
           itemBuilder: methodItemBuilder,
         ),
       ),

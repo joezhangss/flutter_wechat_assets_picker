@@ -1,15 +1,18 @@
-///
-/// [Author] Alex (https://github.com/AlexV525)
-/// [Date] 2020-11-01 02:05
-///
+// Copyright 2019 The FlutterCandies author. All rights reserved.
+// Use of this source code is governed by an Apache license that can be found
+// in the LICENSE file.
+
 import 'package:flutter/material.dart';
 
 import '../constants/custom_pick_method.dart';
 import 'pickers/directory_file_asset_picker.dart';
+import 'pickers/multi_tabs_assets_picker.dart';
 
 class CustomPickersPage extends StatefulWidget {
+  const CustomPickersPage({super.key});
+
   @override
-  _CustomPickerPageState createState() => _CustomPickerPageState();
+  State<CustomPickersPage> createState() => _CustomPickerPageState();
 }
 
 class _CustomPickerPageState extends State<CustomPickersPage>
@@ -39,6 +42,15 @@ class _CustomPickerPageState extends State<CustomPickersPage>
           ),
         ),
       ),
+      CustomPickMethod(
+        icon: '🔀',
+        name: 'Multi tab picker',
+        description: 'The picker contains multiple tab with different types of '
+            'assets for the picking at the same time.',
+        method: (BuildContext context) => Navigator.of(context).push<void>(
+          MaterialPageRoute<void>(builder: (_) => const MultiTabAssetPicker()),
+        ),
+      ),
     ];
   }
 
@@ -58,10 +70,9 @@ class _CustomPickerPageState extends State<CustomPickersPage>
 }
 
 class _MethodListView extends StatelessWidget {
-  const _MethodListView({
-    Key? key,
-    required this.pickMethods,
-  }) : super(key: key);
+  // TODO(Alex): Tracking if it's a false-positive: https://github.com/dart-lang/linter/issues/3386
+  // ignore: unused_element
+  const _MethodListView({super.key, required this.pickMethods});
 
   final List<CustomPickMethod> pickMethods;
 
@@ -83,7 +94,7 @@ class _MethodListView extends StatelessWidget {
               child: Center(
                 child: Text(
                   model.icon,
-                  style: const TextStyle(fontSize: 24.0),
+                  style: const TextStyle(fontSize: 28.0),
                 ),
               ),
             ),

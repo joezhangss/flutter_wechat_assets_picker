@@ -1,23 +1,26 @@
-///
-/// [Author] Alex (https://github.com/Alex525)
-/// [Date] 2020/4/6 18:58
-///
+// Copyright 2019 The FlutterCandies author. All rights reserved.
+// Use of this source code is governed by an Apache license that can be found
+// in the LICENSE file.
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../constants/constants.dart';
+import '../../delegates/asset_picker_viewer_builder_delegate.dart';
+import '../../internal/methods.dart';
+import '../../internal/singleton.dart';
 import '../scale_text.dart';
 import 'locally_available_builder.dart';
 
 class VideoPageBuilder extends StatefulWidget {
   const VideoPageBuilder({
-    Key? key,
+    super.key,
     required this.asset,
     required this.delegate,
     this.hasOnlyOneVideoAndMoment = false,
-  }) : super(key: key);
+  });
 
   /// Asset currently displayed.
   /// 展示的资源
@@ -30,7 +33,7 @@ class VideoPageBuilder extends StatefulWidget {
   final bool hasOnlyOneVideoAndMoment;
 
   @override
-  _VideoPageBuilderState createState() => _VideoPageBuilderState();
+  State<VideoPageBuilder> createState() => _VideoPageBuilderState();
 }
 
 class _VideoPageBuilderState extends State<VideoPageBuilder> {
@@ -137,13 +140,69 @@ class _VideoPageBuilderState extends State<VideoPageBuilder> {
     controller.play();
   }
 
+  Widget _contentBuilder(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        Positioned.fill(
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: controller.value.aspectRatio,
+              child: VideoPlayer(controller),
+            ),
+          ),
+        ),
+        if (!widget.hasOnlyOneVideoAndMoment)
+          ValueListenableBuilder<bool>(
+            valueListenable: isPlaying,
+            builder: (_, bool value, __) => GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: value
+                  ? playButtonCallback
+                  : widget.delegate.switchDisplayingDetail,
+              child: Center(
+                child: AnimatedOpacity(
+                  duration: kThemeAnimationDuration,
+                  opacity: value ? 0.0 : 1.0,
+                  child: GestureDetector(
+                    onTap: playButtonCallback,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(color: Colors.black12)
+                        ],
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        value
+                            ? Icons.pause_circle_outline
+                            : Icons.play_circle_filled,
+                        size: 70.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LocallyAvailableBuilder(
       asset: widget.asset,
       builder: (BuildContext context, AssetEntity asset) {
         if (hasErrorWhenInitializing) {
-          return Center(child: ScaleText(Constants.textDelegate.loadFailed));
+          return Center(
+            child: ScaleText(
+              Singleton.textDelegate.loadFailed,
+              semanticsLabel:
+                  Singleton.textDelegate.semanticsTextDelegate.loadFailed,
+            ),
+          );
         }
         if (!_isLocallyAvailable && !_isInitializing) {
           initializeVideoPlayerController();
@@ -151,52 +210,16 @@ class _VideoPageBuilderState extends State<VideoPageBuilder> {
         if (!hasLoaded) {
           return const SizedBox.shrink();
         }
-        return Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            Positioned.fill(
-              child: Center(
-                child: AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: VideoPlayer(controller),
-                ),
-              ),
-            ),
-            if (!widget.hasOnlyOneVideoAndMoment)
-              ValueListenableBuilder<bool>(
-                valueListenable: isPlaying,
-                builder: (_, bool value, __) => GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: value
-                      ? playButtonCallback
-                      : widget.delegate.switchDisplayingDetail,
-                  child: Center(
-                    child: AnimatedOpacity(
-                      duration: kThemeAnimationDuration,
-                      opacity: value ? 0.0 : 1.0,
-                      child: GestureDetector(
-                        onTap: playButtonCallback,
-                        child: DecoratedBox(
-                          decoration: const BoxDecoration(
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(color: Colors.black12)
-                            ],
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            value
-                                ? Icons.pause_circle_outline
-                                : Icons.play_circle_filled,
-                            size: 70.0,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+        return Semantics(
+          onLongPress: playButtonCallback,
+          onLongPressHint:
+              Singleton.textDelegate.semanticsTextDelegate.sActionPlayHint,
+          child: GestureDetector(
+            onLongPress: MediaQuery.of(context).accessibleNavigation
+                ? playButtonCallback
+                : null,
+            child: _contentBuilder(context),
+          ),
         );
       },
     );

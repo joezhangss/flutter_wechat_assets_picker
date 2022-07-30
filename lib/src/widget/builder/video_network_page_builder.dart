@@ -7,6 +7,9 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:wechat_assets_picker/src/constants/constants.dart';
+import 'package:wechat_assets_picker/src/internal/methods.dart';
+import 'package:wechat_assets_picker/src/internal/singleton.dart';
+import 'package:wechat_assets_picker/src/widget/scale_text.dart';
 
 class VideoNetworkPageBuilder extends StatefulWidget {
   const VideoNetworkPageBuilder({
@@ -138,11 +141,17 @@ class _VideoNetworkPageBuilderState extends State<VideoNetworkPageBuilder> {
   @override
   Widget build(BuildContext context) {
     if (hasErrorWhenInitializing) {
-      return Center(child: Text(Constants.textDelegate.loadFailed));
+      return Center(
+        child: ScaleText(
+          Singleton.textDelegate.loadFailed,
+          semanticsLabel:
+          Singleton.textDelegate.semanticsTextDelegate.loadFailed,
+        ),
+      );
     }
     if (!hasLoaded) {
 //       return const SizedBox.shrink();
-      return Center(
+      return const Center(
         child: CupertinoActivityIndicator(),
       );
     }

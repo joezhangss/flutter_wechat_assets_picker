@@ -1,16 +1,20 @@
-///
-/// [Author] Alex (https://github.com/Alex525)
-/// [Date] 2020/5/21 14:18
-///
+// Copyright 2019 The FlutterCandies author. All rights reserved.
+// Use of this source code is governed by an Apache license that can be found
+// in the LICENSE file.
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:video_player/video_player.dart';
 
-import '../../../src/constants/constants.dart';
+import '../../constants/extensions.dart';
+import '../../internal/methods.dart';
+import '../../internal/singleton.dart';
 import '../scale_text.dart';
 
 class AudioPageBuilder extends StatefulWidget {
-  const AudioPageBuilder({Key? key, required this.asset}) : super(key: key);
+  const AudioPageBuilder({super.key, required this.asset});
 
   /// Asset currently displayed.
   /// 展示的资源
@@ -96,6 +100,14 @@ class _AudioPageBuilderState extends State<AudioPageBuilder> {
     durationStreamController.add(_controller.value.position);
   }
 
+  void playButtonCallback() {
+    if (isPlaying) {
+      _controller.pause();
+    } else {
+      _controller.play();
+    }
+  }
+
   /// Title widget.
   /// 标题组件
   Widget get titleWidget {
@@ -109,13 +121,7 @@ class _AudioPageBuilderState extends State<AudioPageBuilder> {
   /// 控制音频播放或暂停的按钮
   Widget get audioControlButton {
     return GestureDetector(
-      onTap: () {
-        if (isPlaying) {
-          _controller.pause();
-        } else {
-          _controller.play();
-        }
-      },
+      onTap: playButtonCallback,
       child: Container(
         margin: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
@@ -133,18 +139,23 @@ class _AudioPageBuilderState extends State<AudioPageBuilder> {
   /// Duration indicator for the audio.
   /// 音频的时长指示器
   Widget get durationIndicator {
+    final String Function(Duration) durationBuilder =
+        Singleton.textDelegate.durationIndicatorBuilder;
+    final String Function(Duration) semanticsDurationBuilder =
+        Singleton.textDelegate.semanticsTextDelegate.durationIndicatorBuilder;
     return StreamBuilder<Duration>(
       initialData: Duration.zero,
       stream: durationStreamController.stream,
       builder: (BuildContext _, AsyncSnapshot<Duration> data) {
         return ScaleText(
-          '${Constants.textDelegate.durationIndicatorBuilder(data.data!)}'
-          ' / '
-          '${Constants.textDelegate.durationIndicatorBuilder(assetDuration)}',
+          '${durationBuilder(data.data!)} / ${durationBuilder(assetDuration)}',
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.normal,
           ),
+          semanticsLabel: '${semanticsDurationBuilder(data.data!)}'
+              ' / '
+              '${semanticsDurationBuilder(assetDuration)}',
         );
       },
     );
@@ -152,18 +163,23 @@ class _AudioPageBuilderState extends State<AudioPageBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: context.themeData.backgroundColor,
-      child: isLoaded
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                titleWidget,
-                audioControlButton,
-                durationIndicator,
-              ],
-            )
-          : const SizedBox.shrink(),
+    return Semantics(
+      onLongPress: playButtonCallback,
+      onLongPressHint:
+          Singleton.textDelegate.semanticsTextDelegate.sActionPlayHint,
+      child: ColoredBox(
+        color: context.themeData.backgroundColor,
+        child: isLoaded
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  titleWidget,
+                  audioControlButton,
+                  durationIndicator,
+                ],
+              )
+            : const SizedBox.shrink(),
+      ),
     );
   }
 }
