@@ -1,11 +1,11 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/Users/qiaozhang/Desktop/flutter_project/flutter
-FLUTTER_APPLICATION_PATH=/Users/qiaozhang/Desktop/wechat_assets_picker-7.3.2/example
+FLUTTER_ROOT=/Users/dengxiao/flutter
+FLUTTER_APPLICATION_PATH=/Users/dengxiao/Desktop/getx/wechat_assets_picker-8.4.2/example
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_BUILD_DIR=build
-FLUTTER_BUILD_NAME=7.3.2
-FLUTTER_BUILD_NUMBER=19
+FLUTTER_BUILD_NAME=8.4.2
+FLUTTER_BUILD_NUMBER=36
 DART_OBFUSCATION=false
-TRACK_WIDGET_CREATION=false
+TRACK_WIDGET_CREATION=true
 TREE_SHAKE_ICONS=false
 PACKAGE_CONFIG=.dart_tool/package_config.json

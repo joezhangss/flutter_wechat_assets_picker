@@ -41,7 +41,8 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
     this.maxAssets,
     this.shouldReversePreview = false,
     this.selectPredicate,
-  });
+  })  : assert(maxAssets == null || maxAssets > 0),
+        assert(currentIndex >= 0);
 
   /// [ChangeNotifier] for photo selector viewer.
   /// 资源预览器的状态保持
@@ -94,19 +95,15 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
 
   /// The [State] for a viewer.
   /// 预览器的状态实例
-  late final AssetPickerViewerState<Asset, Path> viewerState;
-
-  /// The [TickerProvider] for animations.
-  /// 用于动画的 [TickerProvider]
-  late final TickerProvider vsync;
+  late AssetPickerViewerState<Asset, Path> viewerState;
 
   /// [AnimationController] for double tap animation.
   /// 双击缩放的动画控制器
-  late final AnimationController doubleTapAnimationController;
+  late AnimationController doubleTapAnimationController;
 
   /// [CurvedAnimation] for double tap.
   /// 双击缩放的动画曲线
-  late final Animation<double> doubleTapCurveAnimation;
+  late Animation<double> doubleTapCurveAnimation;
 
   /// [Animation] for double tap.
   /// 双击缩放的动画
@@ -159,25 +156,35 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
       Singleton.textDelegate.semanticsTextDelegate;
 
   /// Call when viewer is calling [State.initState].
-  /// 当预览器调用 [State.initState] 时注册 [State] 和 [TickerProvider]。
+  /// 当预览器调用 [State.initState] 时注册 [State]。
+  @mustCallSuper
   void initStateAndTicker(
-    AssetPickerViewerState<Asset, Path> s,
-    TickerProvider v,
+    covariant AssetPickerViewerState<Asset, Path> state,
+    TickerProvider v, // TODO(Alex): Remove this in the next major version.
   ) {
-    viewerState = s;
-    vsync = v;
-    doubleTapAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: v,
-    );
-    doubleTapCurveAnimation = CurvedAnimation(
-      parent: doubleTapAnimationController,
-      curve: Curves.easeInOut,
-    );
+    initAnimations(state);
+  }
+
+  /// Call when the viewer is calling [State.didUpdateWidget].
+  /// 当预览器调用 [State.didUpdateWidget] 时操作 [State]。
+  ///
+  /// Since delegates are relatively "Stateless" compare to the
+  /// [AssetPickerViewerState], the widget that holds the delegate might changed
+  /// when using the viewer as a nested widget, which will construct
+  /// a new delegate and only calling [State.didUpdateWidget] at the moment.
+  @mustCallSuper
+  void didUpdateViewer(
+    covariant AssetPickerViewerState<Asset, Path> state,
+    covariant AssetPickerViewer<Asset, Path> oldWidget,
+    covariant AssetPickerViewer<Asset, Path> newWidget,
+  ) {
+    // Widgets are useless in the default delegate.
+    initAnimations(state);
   }
 
   /// Keep a dispose method to sync with [State].
   /// 保留一个 dispose 方法与 [State] 同步。
+  @mustCallSuper
   void dispose() {
     provider?.dispose();
     pageController.dispose();
@@ -189,6 +196,20 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
       ..stop()
       ..reset()
       ..dispose();
+  }
+
+  /// Initialize animations related to the zooming preview.
+  /// 为缩放预览初始化动画
+  void initAnimations(covariant AssetPickerViewerState<Asset, Path> state) {
+    viewerState = state;
+    doubleTapAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: state,
+    );
+    doubleTapCurveAnimation = CurvedAnimation(
+      parent: doubleTapAnimationController,
+      curve: Curves.easeInOut,
+    );
   }
 
   /// Produce [OrdinalSortKey] with the fixed name.
@@ -353,8 +374,7 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
 
 class DefaultAssetPickerViewerBuilderDelegate
     extends AssetPickerViewerBuilderDelegate<AssetEntity, AssetPathEntity> {
-  DefaultAssetPickerViewerBuilderDelegate(
-  {
+  DefaultAssetPickerViewerBuilderDelegate({
     required super.currentIndex,
     required super.previewAssets,
     required super.themeData,
@@ -363,10 +383,10 @@ class DefaultAssetPickerViewerBuilderDelegate
     super.selectedAssets,
     this.previewThumbnailSize,
     this.specialPickerType,
-  //---zq 0730 start-----
+    //---zq 0730 start-----
     this.downLoad,
     this.switchVideoPlayer,
-  //---zq 0730 end-----
+    //---zq 0730 end-----
     super.maxAssets,
     super.shouldReversePreview,
     super.selectPredicate,
@@ -395,7 +415,7 @@ class DefaultAssetPickerViewerBuilderDelegate
       (selectedAssets?.any((AssetEntity e) => e.type == AssetType.video) ??
           false);
 
-// ===============zq==0412========start====
+  // ===============zq==0412========start====
   final ValueChanged<String>? downLoad;
   final ValueChanged<String>? switchVideoPlayer;
 // ===============zq==0412========end====
@@ -423,17 +443,13 @@ class DefaultAssetPickerViewerBuilderDelegate
         );
         break;
       case AssetType.other:
-
-        //zq modify start -- 2021.11.10适配网络图片或视频的显示
-        // builder = Center(
-        //   child: ScaleText(
-        //     textDelegate.unSupportedAssetType,
-        //     semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
-        //   ),
-        // );
-        // _builder = Center(
-        //   child: ScaleText(Constants.textDelegate.unSupportedAssetType),
-        // );
+      //zq modify start -- 2021.11.10适配网络图片或视频的显示
+      //   builder = Center(
+      //     child: ScaleText(
+      //       textDelegate.unSupportedAssetType,
+      //       semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
+      //     ),
+      //   );
         if(asset.relativePath != null && asset.relativePath != '')
         {
           final List<String> nameList = asset.relativePath!.split('.');
@@ -764,10 +780,10 @@ class DefaultAssetPickerViewerBuilderDelegate
 
   /// AppBar widget.
   /// 顶栏部件
-/// zq 0730 start-----
+  /// zq 0730 start-----
 //   Widget appBar(BuildContext context) {
-    Widget appBar(BuildContext context,ValueChanged<String>? downLoad, ValueChanged<String>? switchVideoPlayer,) {
-  // Widget appBar(BuildContext context) {
+  Widget appBar(BuildContext context,ValueChanged<String>? downLoad, ValueChanged<String>? switchVideoPlayer,) {
+    // Widget appBar(BuildContext context) {
     //zq 0730 end ----
     return ValueListenableBuilder<bool>(
       valueListenable: isDisplayingDetail,
@@ -830,7 +846,6 @@ class DefaultAssetPickerViewerBuilderDelegate
               },
             ),
             //=======zq========lxy==0324====下载标====end====
-
             if (!isAppleOS && specialPickerType == null)
               Expanded(
                 child: Center(
@@ -882,12 +897,11 @@ class DefaultAssetPickerViewerBuilderDelegate
       ),
     );
   }
-
 //=======zq========lxy==0324========start====
-/// 判断是否为视频、图片、网络
-bool isNetworkFile(){
-  return previewAssets[currentIndex].relativePath?.contains('http')??false;
-}
+  /// 判断是否为视频、图片、网络
+  bool isNetworkFile(){
+    return previewAssets[currentIndex].relativePath?.contains('http')??false;
+  }
 //======zq=========lxy==0324========end====
 
   /// It'll pop with [AssetPickerProvider.selectedAssets] when there are
@@ -955,10 +969,12 @@ bool isNetworkFile(){
             child: ScaleText(
               buildText(),
               style: TextStyle(
-                color: themeData.textTheme.bodyText1?.color,
+                color: themeData.textTheme.bodyLarge?.color,
                 fontSize: 17,
                 fontWeight: FontWeight.normal,
               ),
+              overflow: TextOverflow.fade,
+              softWrap: false,
               semanticsLabel: () {
                 if (isWeChatMoment && hasVideo) {
                   return semanticsTextDelegate.confirm;

@@ -41,13 +41,12 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
     int? maxAssets,
     bool shouldReversePreview = false,
     AssetSelectPredicate<AssetEntity>? selectPredicate,
-        //===============lxy==0324========start====
-        ValueChanged<String>? downLoads,
-        //===============lxy==0324========end====
-        //===============zq==0412========start====
-        ValueChanged<String>? switchVideoPlayerAction,//用于播放视频有问题时使用其他播放器播放
-        //===============zq==0412========end====
-
+    //===============lxy==0324========start====
+    ValueChanged<String>? downLoads,
+    //===============lxy==0324========end====
+    //===============zq==0412========start====
+    ValueChanged<String>? switchVideoPlayerAction,//用于播放视频有问题时使用其他播放器播放
+    //===============zq==0412========end====
   }) async {
     await AssetPicker.permissionCheck();
     final Widget viewer = AssetPickerViewer<AssetEntity, AssetPathEntity>(
@@ -124,6 +123,12 @@ class AssetPickerViewerState<Asset, Path>
   void initState() {
     super.initState();
     builder.initStateAndTicker(this, this);
+  }
+
+  @override
+  void didUpdateWidget(covariant AssetPickerViewer<Asset, Path> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    builder.didUpdateViewer(this, oldWidget, widget);
   }
 
   @override
