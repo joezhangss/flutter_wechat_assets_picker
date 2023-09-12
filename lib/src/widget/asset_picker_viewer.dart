@@ -41,12 +41,12 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
     int? maxAssets,
     bool shouldReversePreview = false,
     AssetSelectPredicate<AssetEntity>? selectPredicate,
-    //===============lxy==0324========start====
-    ValueChanged<String>? downLoads,
-    //===============lxy==0324========end====
-    //===============zq==0412========start====
-    ValueChanged<String>? switchVideoPlayerAction,//用于播放视频有问题时使用其他播放器播放
-    //===============zq==0412========end====
+        //===============zq-lxy==0324========start====
+        ValueChanged<String>? downLoads,
+        //===============zq-lxy==0324========end====
+        //===============zq==0412========start====
+        ValueChanged<String>? switchVideoPlayerAction,//用于播放视频有问题时使用其他播放器播放
+        //===============zq==0412========end====    
   }) async {
     await AssetPicker.permissionCheck();
     final Widget viewer = AssetPickerViewer<AssetEntity, AssetPathEntity>(
@@ -69,11 +69,11 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
         maxAssets: maxAssets,
         shouldReversePreview: shouldReversePreview,
         selectPredicate: selectPredicate,
-        //===============lxy==0324========start====
+        //===============zq-lxy==0324========start====
         downLoad:downLoads==null?null:(e){
           downLoads(e);
         },
-        //===============lxy==0324========end====
+        //===============zq-lxy==0324========end====
         // ===============zq==0412========start====
         switchVideoPlayer:switchVideoPlayerAction==null?null:(e){
           switchVideoPlayerAction(e);

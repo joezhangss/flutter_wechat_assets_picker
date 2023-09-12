@@ -3,7 +3,6 @@
 // in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:extended_image/extended_image.dart';
@@ -12,7 +11,6 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:wechat_assets_picker/src/widget/builder/video_network_page_builder.dart';
 
 import '../constants/custom_scroll_physics.dart';
 import '../constants/enums.dart';
@@ -29,6 +27,7 @@ import '../widget/builder/image_page_builder.dart';
 import '../widget/builder/value_listenable_builder_2.dart';
 import '../widget/builder/video_page_builder.dart';
 import '../widget/scale_text.dart';
+import '../widget/video_network_page_builder.dart';
 
 abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
   AssetPickerViewerBuilderDelegate({
@@ -148,7 +147,10 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
 
   /// Whether the current platform is Apple OS.
   /// 当前平台是否为苹果系列系统
-  bool get isAppleOS => Platform.isIOS || Platform.isMacOS;
+  bool isAppleOS(BuildContext context) => switch (context.theme.platform) {
+        TargetPlatform.iOS || TargetPlatform.macOS => true,
+        _ => false,
+      };
 
   AssetPickerTextDelegate get textDelegate => Singleton.textDelegate;
 
@@ -325,17 +327,13 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
     ExtendedImageState state, {
     bool hasLoaded = false,
   }) {
-    switch (state.extendedImageLoadState) {
-      case LoadState.completed:
-        if (hasLoaded) {
-          return state.completedWidget;
-        }
-        return FadeImageBuilder(child: state.completedWidget);
-      case LoadState.failed:
-        return failedItemBuilder(context);
-      case LoadState.loading:
-        return const SizedBox.shrink();
-    }
+    return switch (state.extendedImageLoadState) {
+      LoadState.completed => hasLoaded
+          ? state.completedWidget
+          : FadeImageBuilder(child: state.completedWidget),
+      LoadState.failed => failedItemBuilder(context),
+      LoadState.loading => const SizedBox.shrink(),
+    };
   }
 
   /// The item widget when [AssetEntity.thumbnailData] load failed.
@@ -423,92 +421,93 @@ class DefaultAssetPickerViewerBuilderDelegate
   @override
   Widget assetPageBuilder(BuildContext context, int index) {
     final AssetEntity asset = previewAssets.elementAt(index);
-    final Widget builder;
-    switch (asset.type) {
-      case AssetType.audio:
-        builder = AudioPageBuilder(asset: asset);
-        break;
-      case AssetType.image:
-        builder = ImagePageBuilder(
+    late Widget tmpWidget;
+    //zq modify start -- 2021.11.10适配网络图片或视频的显示
+    //   builder = Center(
+    //     child: ScaleText(
+    //       textDelegate.unSupportedAssetType,
+    //       semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
+    //     ),
+    //   );
+    if(asset.relativePath != null && asset.relativePath != '')
+    {
+      final List<String> nameList = asset.relativePath!.split('.');
+      // print("加载视频。。。nameList==${nameList}");
+      final String fileType = nameList[nameList.length-1];
+      // print("加载视频。。。fileType==${fileType}");
+      if(fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov')
+      {
+        // print("加载视频。。。${asset.relativePath}");
+        //视频格式
+        tmpWidget = VideoNetworkPageBuilder(url: asset.relativePath!,);
+      }
+      else if(fileType.toLowerCase() == 'png' || fileType.toLowerCase() == 'jpg' || fileType.toLowerCase() == 'jpeg' || fileType.toLowerCase() == 'bmp')
+      {
+        // print("加载图片。。。fileType==${fileType}===${asset}===${asset.relativePath!}");
+        // _builder = Image.network(asset.relativePath!);
+        //支持网络图片
+        /*lxy zq 20220321 支持图片手势放大缩小======= start*/
+        var item = asset.relativePath!;
+        tmpWidget = ExtendedImage.network( item,
+          fit: BoxFit.contain,
+          mode: ExtendedImageMode.gesture,
+          initGestureConfigHandler: (state) {
+            return GestureConfig(
+              minScale: 0.9,
+              animationMinScale: 0.7,
+              maxScale: 3.0,
+              animationMaxScale: 3.5,
+              speed: 1.0,
+              inertialSpeed: 100.0,
+              initialScale: 1.0,
+              inPageView: false,
+              initialAlignment: InitialAlignment.center,
+            );
+          },
+        );
+        /*lxy zq 20220321 支持图片手势放大缩小======= end*/
+      }
+      else
+      {
+        tmpWidget = Center(
+          child: ScaleText(
+            textDelegate.unSupportedAssetType,
+            semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
+          ),
+        );
+      }
+
+    }else{
+      tmpWidget = Center(
+        child: ScaleText(
+          textDelegate.unSupportedAssetType,
+          semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
+        ),
+      );
+    }
+    //zq modify end -- 2021.11.10适配网络图片或视频的显示
+    final Widget builder = switch (asset.type) {
+      AssetType.audio => AudioPageBuilder(asset: asset),
+      AssetType.image => ImagePageBuilder(
           asset: asset,
           delegate: this,
           previewThumbnailSize: previewThumbnailSize,
-        );
-        break;
-      case AssetType.video:
-        builder = VideoPageBuilder(
+        ),
+      AssetType.video => VideoPageBuilder(
           asset: asset,
           delegate: this,
           hasOnlyOneVideoAndMoment: isWeChatMoment && hasVideo,
-        );
-        break;
-      case AssetType.other:
-      //zq modify start -- 2021.11.10适配网络图片或视频的显示
-      //   builder = Center(
+        ),
+        //zq modify start -- 2023.09.11适配网络图片或视频的显示
+      // AssetType.other => Center(
       //     child: ScaleText(
       //       textDelegate.unSupportedAssetType,
       //       semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
       //     ),
-      //   );
-        if(asset.relativePath != null && asset.relativePath != '')
-        {
-          final List<String> nameList = asset.relativePath!.split('.');
-          // print("加载视频。。。nameList==${nameList}");
-          final String fileType = nameList[nameList.length-1];
-          // print("加载视频。。。fileType==${fileType}");
-          if(fileType.toLowerCase() == 'mp4' || fileType.toLowerCase() == '3gp' || fileType.toLowerCase() == 'mov')
-          {
-            // print("加载视频。。。${asset.relativePath}");
-            //视频格式
-            builder = VideoNetworkPageBuilder(url: asset.relativePath!,);
-          }
-          else if(fileType.toLowerCase() == 'png' || fileType.toLowerCase() == 'jpg' || fileType.toLowerCase() == 'jpeg' || fileType.toLowerCase() == 'bmp')
-          {
-            // print("加载图片。。。fileType==${fileType}===${asset}===${asset.relativePath!}");
-            // _builder = Image.network(asset.relativePath!);
-            //支持网络图片
-            /*lxy zq 20220321 支持图片手势放大缩小======= start*/
-            var item = asset.relativePath!;
-            builder = ExtendedImage.network( item,
-              fit: BoxFit.contain,
-              mode: ExtendedImageMode.gesture,
-              initGestureConfigHandler: (state) {
-                return GestureConfig(
-                  minScale: 0.9,
-                  animationMinScale: 0.7,
-                  maxScale: 3.0,
-                  animationMaxScale: 3.5,
-                  speed: 1.0,
-                  inertialSpeed: 100.0,
-                  initialScale: 1.0,
-                  inPageView: false,
-                  initialAlignment: InitialAlignment.center,
-                );
-              },
-            );
-            /*lxy zq 20220321 支持图片手势放大缩小======= end*/
-          }
-          else
-          {
-            builder = Center(
-              child: ScaleText(
-                textDelegate.unSupportedAssetType,
-                semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
-              ),
-            );
-          }
-
-        }else{
-          builder = Center(
-            child: ScaleText(
-              textDelegate.unSupportedAssetType,
-              semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
-            ),
-          );
-        }
-        //zq modify end -- 2021.11.10适配网络图片或视频的显示
-        break;
-    }
+      //   ),
+        AssetType.other => tmpWidget,
+    //zq modify end -- 2023.09.11适配网络图片或视频的显示
+    };
     return MergeSemantics(
       child: Consumer<AssetPickerViewerProvider<AssetEntity>?>(
         builder: (
@@ -547,7 +546,7 @@ class DefaultAssetPickerViewerBuilderDelegate
   /// 音频的底部预览部件
   Widget _audioPreviewItem(AssetEntity asset) {
     return ColoredBox(
-      color: viewerState.context.themeData.dividerColor,
+      color: viewerState.context.theme.dividerColor,
       child: const Center(child: Icon(Icons.audiotrack)),
     );
   }
@@ -660,13 +659,10 @@ class DefaultAssetPickerViewerBuilderDelegate
                 color: backgroundColor,
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  const Spacer(),
-                  if (isAppleOS && (provider != null || isWeChatMoment))
-                    confirmButton(context)
-                  else
-                    selectButton(context),
+                  if (provider != null || isWeChatMoment)
+                    confirmButton(context),
                 ],
               ),
             ),
@@ -693,7 +689,7 @@ class DefaultAssetPickerViewerBuilderDelegate
       pageController.jumpToPage(page);
       final double offset =
           (index - 0.5) * (bottomPreviewHeight - padding * 3) -
-              context.mediaQuery.size.width / 4;
+              MediaQuery.sizeOf(context).width / 4;
       previewingListController.animateTo(
         math.max(0, offset),
         curve: Curves.ease,
@@ -714,18 +710,12 @@ class DefaultAssetPickerViewerBuilderDelegate
           builder: (_, AsyncSnapshot<int> snapshot) {
             final AssetEntity asset = selectedAssets!.elementAt(index);
             final bool isViewing = previewAssets[snapshot.data!] == asset;
-            final Widget item = () {
-              switch (asset.type) {
-                case AssetType.image:
-                  return _imagePreviewItem(asset);
-                case AssetType.video:
-                  return _videoPreviewItem(asset);
-                case AssetType.audio:
-                  return _audioPreviewItem(asset);
-                case AssetType.other:
-                  return const SizedBox.shrink();
-              }
-            }();
+            final Widget item = switch (asset.type) {
+              AssetType.image => _imagePreviewItem(asset),
+              AssetType.video => _videoPreviewItem(asset),
+              AssetType.audio => _audioPreviewItem(asset),
+              AssetType.other => const SizedBox.shrink(),
+            };
             return Semantics(
               label: '${semanticsTextDelegate.semanticTypeLabel(asset.type)}'
                   '${index + 1}',
@@ -846,7 +836,7 @@ class DefaultAssetPickerViewerBuilderDelegate
               },
             ),
             //=======zq========lxy==0324====下载标====end====
-            if (!isAppleOS && specialPickerType == null)
+            if (!isAppleOS(context) && specialPickerType == null)
               Expanded(
                 child: Center(
                   child: Semantics(
@@ -865,32 +855,18 @@ class DefaultAssetPickerViewerBuilderDelegate
                   ),
                 ),
               ),
-            if (isAppleOS && provider != null)
+            if (provider != null)
               Expanded(
-                child: Align(
+                child: Container(
                   alignment: AlignmentDirectional.centerEnd,
+                  padding: const EdgeInsetsDirectional.only(end: 14),
                   child: Semantics(
                     sortKey: ordinalSortKey(0.2),
                     child: selectButton(context),
                   ),
                 ),
               )
-            else if (isAppleOS)
-              const Spacer(),
-            if (!isAppleOS && (provider != null || isWeChatMoment))
-              Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: Semantics(
-                    sortKey: ordinalSortKey(0.3),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.only(end: 14),
-                      child: confirmButton(context),
-                    ),
-                  ),
-                ),
-              )
-            else if (!isAppleOS)
+            else
               const Spacer(),
           ],
         ),
@@ -903,7 +879,6 @@ class DefaultAssetPickerViewerBuilderDelegate
     return previewAssets[currentIndex].relativePath?.contains('http')??false;
   }
 //======zq=========lxy==0324========end====
-
   /// It'll pop with [AssetPickerProvider.selectedAssets] when there are
   /// any assets were chosen. Then, the assets picker will pop too.
   /// 当有资源已选时，点击按钮将把已选资源通过路由返回。
@@ -1069,14 +1044,14 @@ class DefaultAssetPickerViewerBuilderDelegate
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
-                    if (isAppleOS)
+                    if (isAppleOS(context))
                       _appleOSSelectButton(c, isSelected, asset)
                     else
                       _androidSelectButton(c, isSelected, asset),
-                    if (!isAppleOS)
+                    if (!isAppleOS(context))
                       ScaleText(
                         textDelegate.select,
-                        style: const TextStyle(fontSize: 17, height: 1),
+                        style: const TextStyle(fontSize: 17, height: 1.2),
                         semanticsLabel: semanticsTextDelegate.select,
                       ),
                   ],
@@ -1135,7 +1110,7 @@ class DefaultAssetPickerViewerBuilderDelegate
                 appBar(context,downLoad, switchVideoPlayer),
                 //=======zq========lxy==0324====下载标====start====
                 if (selectedAssets != null ||
-                    (isWeChatMoment && hasVideo && isAppleOS))
+                    (isWeChatMoment && hasVideo && isAppleOS(context)))
                   bottomDetailBuilder(context),
               ],
             ],

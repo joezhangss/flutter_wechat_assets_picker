@@ -1,5 +1,5 @@
 ///
-/// [Author] Alex (https://github.com/Alex525)
+/// [Author] zq
 /// [Date] 2020/4/6 18:58
 ///
 import 'package:flutter/material.dart';
@@ -7,7 +7,7 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:wechat_assets_picker/src/constants/constants.dart';
-import 'package:wechat_assets_picker/src/internal/methods.dart';
+// import 'package:wechat_assets_picker/src/internal/methods.dart';
 import 'package:wechat_assets_picker/src/internal/singleton.dart';
 import 'package:wechat_assets_picker/src/widget/scale_text.dart';
 
@@ -98,7 +98,7 @@ class _VideoNetworkPageBuilderState extends State<VideoNetworkPageBuilder> {
         _controller.play();
       }
     } catch (e) {
-      realDebugPrint('Error when initialize video controller: $e');
+      // realDebugPrint('Error when initialize video controller: $e');
       hasErrorWhenInitializing = true;
     } finally {
       if (mounted) {
