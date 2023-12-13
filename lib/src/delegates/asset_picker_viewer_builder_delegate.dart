@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/custom_scroll_physics.dart';
@@ -421,8 +422,9 @@ class DefaultAssetPickerViewerBuilderDelegate
   @override
   Widget assetPageBuilder(BuildContext context, int index) {
     final AssetEntity asset = previewAssets.elementAt(index);
-    late Widget tmpWidget;
+
     //zq modify start -- 2021.11.10适配网络图片或视频的显示
+    late Widget tmpWidget;
     //   builder = Center(
     //     child: ScaleText(
     //       textDelegate.unSupportedAssetType,
@@ -486,6 +488,7 @@ class DefaultAssetPickerViewerBuilderDelegate
       );
     }
     //zq modify end -- 2021.11.10适配网络图片或视频的显示
+
     final Widget builder = switch (asset.type) {
       AssetType.audio => AudioPageBuilder(asset: asset),
       AssetType.image => ImagePageBuilder(
@@ -773,7 +776,6 @@ class DefaultAssetPickerViewerBuilderDelegate
   /// zq 0730 start-----
 //   Widget appBar(BuildContext context) {
   Widget appBar(BuildContext context,ValueChanged<String>? downLoad, ValueChanged<String>? switchVideoPlayer,) {
-    // Widget appBar(BuildContext context) {
     //zq 0730 end ----
     return ValueListenableBuilder<bool>(
       valueListenable: isDisplayingDetail,

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/constants.dart';
@@ -875,19 +876,16 @@ class DefaultAssetPickerBuilderDelegate
   ) async {
     final DefaultAssetPickerProvider provider =
         context.read<DefaultAssetPickerProvider>();
-    bool selectedAllAndNotSelected() =>
-        !provider.selectedAssets.contains(currentAsset) &&
-        provider.selectedMaximumAssets;
-    bool selectedPhotosAndIsVideo() =>
-        isWeChatMoment &&
-        currentAsset.type == AssetType.video &&
-        provider.selectedAssets.isNotEmpty;
-    // When we reached the maximum select count and the asset
-    // is not selected, do nothing.
-    // When the special type is WeChat Moment, pictures and videos cannot
-    // be selected at the same time. Video select should be banned if any
-    // pictures are selected.
-    if (selectedAllAndNotSelected() || selectedPhotosAndIsVideo()) {
+    // - When we reached the maximum select count and the asset is not selected,
+    //   do nothing.
+    // - When the special type is WeChat Moment, pictures and videos cannot
+    //   be selected at the same time. Video select should be banned if any
+    //   pictures are selected.
+    if ((!provider.selectedAssets.contains(currentAsset) &&
+            provider.selectedMaximumAssets) ||
+        (isWeChatMoment &&
+            currentAsset.type == AssetType.video &&
+            provider.selectedAssets.isNotEmpty)) {
       return;
     }
     final List<AssetEntity> current;
@@ -1707,7 +1705,7 @@ class DefaultAssetPickerBuilderDelegate
 
   @override
   Widget pathEntitySelector(BuildContext context) {
-    Widget _text(
+    Widget pathText(
       BuildContext context,
       String text,
       String semanticsText,
@@ -1758,13 +1756,13 @@ class DefaultAssetPickerBuilderDelegate
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   if (path == null && isPermissionLimited)
-                    _text(
+                    pathText(
                       context,
                       textDelegate.changeAccessibleLimitedAssets,
                       semanticsTextDelegate.changeAccessibleLimitedAssets,
                     ),
                   if (path != null)
-                    _text(
+                    pathText(
                       context,
                       isPermissionLimited && path.isAll
                           ? textDelegate.accessiblePathName
@@ -1924,33 +1922,6 @@ class DefaultAssetPickerBuilderDelegate
 
   @override
   Widget previewButton(BuildContext context) {
-    Future<void> _onTap() async {
-      final DefaultAssetPickerProvider p =
-          context.read<DefaultAssetPickerProvider>();
-      final List<AssetEntity> selectedAssets = p.selectedAssets;
-      final List<AssetEntity> selected;
-      if (isWeChatMoment) {
-        selected = selectedAssets
-            .where((AssetEntity e) => e.type == AssetType.image)
-            .toList();
-      } else {
-        selected = selectedAssets;
-      }
-      final List<AssetEntity>? result = await AssetPickerViewer.pushToViewer(
-        context,
-        previewAssets: selected,
-        previewThumbnailSize: previewThumbnailSize,
-        selectPredicate: selectPredicate,
-        selectedAssets: selected,
-        selectorProvider: provider,
-        themeData: theme,
-        maxAssets: p.maxAssets,
-      );
-      if (result != null) {
-        Navigator.of(context).maybePop(result);
-      }
-    }
-
     return Consumer<DefaultAssetPickerProvider>(
       builder: (_, DefaultAssetPickerProvider p, Widget? child) {
         return ValueListenableBuilder<bool>(
@@ -1965,8 +1936,10 @@ class DefaultAssetPickerBuilderDelegate
         );
       },
       child: Consumer<DefaultAssetPickerProvider>(
-        builder: (_, DefaultAssetPickerProvider p, __) => GestureDetector(
-          onTap: p.isSelectedNotEmpty ? _onTap : null,
+        builder: (context, DefaultAssetPickerProvider p, __) => GestureDetector(
+          onTap: p.isSelectedNotEmpty
+              ? () => viewAsset(context, 0, p.selectedAssets.first)
+              : null,
           child: Selector<DefaultAssetPickerProvider, String>(
             selector: (_, DefaultAssetPickerProvider p) =>
                 p.selectedDescriptions,
